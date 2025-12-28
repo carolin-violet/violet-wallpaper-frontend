@@ -16,3 +16,53 @@
   --color-green-900: #0A5331;
   --color-green-950: #052E16;
 }
+
+/* 壁纸卡片动画优化 */
+.wallpaper-card {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.wallpaper-card:hover {
+  transform: translateY(-4px);
+}
+
+/* 图片懒加载优化 */
+img[loading="lazy"] {
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+img[loading="lazy"].loaded {
+  opacity: 1;
+}
+
+/* 响应式网格优化 */
+@media (max-width: 640px) {
+  .wallpaper-grid {
+    grid-template-columns: repeat(1, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 640px) and (max-width: 768px) {
+  .wallpaper-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1024px) {
+  .wallpaper-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1024px) and (max-width: 1280px) {
+  .wallpaper-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1280px) {
+  .wallpaper-grid {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+}

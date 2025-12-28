@@ -22,3 +22,6 @@ logs
 .env
 .env.*
 !.env.example
+
+# Generated API client (可选，如果不想提交生成的代码)
+# app/api/generated
