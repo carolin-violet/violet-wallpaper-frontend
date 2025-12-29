@@ -4,20 +4,12 @@
     @click="handleClick"
   >
     <!-- 图片容器 -->
-    <div class="relative aspect-[16/9] w-full overflow-hidden">
-      <img
-        v-if="wallpaper.thumbnail_url"
-        :src="wallpaper.thumbnail_url"
-        alt=""
-      />
-      <!-- <NuxtImg
+    <div class="relative aspect-video w-full overflow-hidden">
+      <NuxtImg
         v-if="wallpaper.thumbnail_url"
         :src="wallpaper.thumbnail_url"
         :alt="wallpaper.original_filename || '壁纸'"
-        class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
-        loading="lazy"
-        placeholder
-      /> -->
+      />
       <div
         v-else
         class="w-full h-full flex items-center justify-center bg-gray-200 dark:bg-gray-700"
@@ -32,14 +24,15 @@
         <div class="flex gap-2">
           <UButton
             icon="i-lucide-download"
-            color="white"
+            color="neutral"
             variant="solid"
             size="sm"
+            :loading="downloading"
             @click.stop="handleDownload"
           />
           <UButton
-            icon="i-lucide-external-link"
-            color="white"
+            icon="i-lucide-eye"
+            color="neutral"
             variant="solid"
             size="sm"
             @click.stop="handleView"
@@ -83,7 +76,12 @@
         >
           {{ tag }}
         </UBadge>
-        <UBadge v-if="tags.length > 3" color="gray" variant="subtle" size="xs">
+        <UBadge
+          v-if="tags.length > 3"
+          color="neutral"
+          variant="subtle"
+          size="xs"
+        >
           +{{ tags.length - 3 }}
         </UBadge>
       </div>
@@ -121,15 +119,62 @@ const emit = defineEmits<{
   view: [wallpaper: PictureResponseInfo];
 }>();
 
+const { downloadPicture } = useWallpaper();
+const downloading = ref(false);
+const showPreview = ref(false);
+
 const handleClick = () => {
   emit("click", props.wallpaper);
 };
 
-const handleDownload = () => {
-  emit("download", props.wallpaper);
+const handleDownload = async () => {
+  if (!props.wallpaper.id) return;
+
+  try {
+    downloading.value = true;
+    const response = await downloadPicture(props.wallpaper.id);
+
+    // 如果响应包含下载 URL，则触发下载
+    if (response && typeof response === "object" && "url" in response) {
+      const downloadUrl = (response as { url?: string }).url;
+      if (downloadUrl) {
+        const link = document.createElement("a");
+        link.href = downloadUrl;
+        link.download =
+          props.wallpaper.original_filename ||
+          `wallpaper-${props.wallpaper.id}`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      }
+    } else if (props.wallpaper.webp_url || props.wallpaper.thumbnail_url) {
+      // 如果没有返回下载 URL，使用 webp_url 或 thumbnail_url
+      const imageUrl =
+        props.wallpaper.webp_url || props.wallpaper.thumbnail_url;
+      if (imageUrl) {
+        const link = document.createElement("a");
+        link.href = imageUrl;
+        link.download =
+          props.wallpaper.original_filename ||
+          `wallpaper-${props.wallpaper.id}`;
+        link.target = "_blank";
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      }
+    }
+
+    emit("download", props.wallpaper);
+  } catch (err) {
+    console.error("下载失败:", err);
+    // 可以在这里显示错误提示
+  } finally {
+    downloading.value = false;
+  }
 };
 
 const handleView = () => {
+  showPreview.value = true;
   emit("view", props.wallpaper);
 };
 </script>

@@ -6,7 +6,7 @@ alwaysApply: true
 
 # 项目介绍
 
-这是一个基于 Nuxt 的壁纸网站。
+这是一个基于 Nuxt 的壁纸网站，该项目使用 bun.js 环境进行开发，并集成了 Tailwind CSS、Axios 和 TypeScript 等技术栈。项目代码实行严格的类型检查，确保编写正确的类型标注，避免冗余注释，确保代码自解释性。
 
 ## 技术栈
 

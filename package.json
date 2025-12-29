@@ -8,6 +8,8 @@
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare",
     "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "lint:staged": "eslint --fix",
     "typecheck": "nuxt typecheck",
     "generate:api": "bun run scripts/generate-api.ts --input=./openapi.config.json",
     "generate:api:url": "bun run scripts/generate-api.ts --input=http://127.0.0.1:8203/openapi.json"
@@ -17,6 +19,7 @@
     "@iconify-json/simple-icons": "^1.2.59",
     "@nuxt/image": "^2.0.0",
     "@nuxt/ui": "^4.2.1",
+    "@types/node": "^25.0.3",
     "axios": "^1.7.9",
     "nuxt": "^4.2.2"
   },

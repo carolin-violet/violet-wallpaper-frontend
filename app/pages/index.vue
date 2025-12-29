@@ -23,7 +23,11 @@
         />
 
         <!-- 分类 -->
-        <UInput v-model="filters.category" placeholder="分类" class="w-40" />
+        <UInput
+          v-model="filters.category"
+          placeholder="分类"
+          class="w-40"
+        />
 
         <!-- 标签 -->
         <USelectMenu
@@ -71,7 +75,7 @@
 </template>
 
 <script setup lang="ts">
-import type { PictureResponseInfo } from "~/api/generated/services/PicturesService";
+import type { PictureResponseInfo } from '~/api/generated/services/PicturesService'
 
 const {
   getWallpapers,
@@ -79,66 +83,66 @@ const {
   incrementView,
   downloadPicture,
   loading,
-  error,
-} = useWallpaper();
+  error
+} = useWallpaper()
 
 // 状态
-const wallpapers = ref<PictureResponseInfo[]>([]);
-const tags = ref<any[]>([]);
-const tagsMap = ref<Record<number, string[]>>({});
-const searchQuery = ref("");
-const selectedTags = ref<string[]>([]);
-const loadingMore = ref(false);
-const hasMore = ref(false);
-const currentPage = ref(1);
-const pageSize = 20;
+const wallpapers = ref<PictureResponseInfo[]>([])
+const tags = ref<any[]>([])
+const tagsMap = ref<Record<number, string[]>>({})
+const searchQuery = ref('')
+const selectedTags = ref<string[]>([])
+const loadingMore = ref(false)
+const hasMore = ref(false)
+const currentPage = ref(1)
+const pageSize = 20
 
 // 筛选器
 const filters = ref({
   deviceType: null as number | null,
-  category: "",
-  tags: null as string[] | null,
-});
+  category: '',
+  tags: null as string[] | null
+})
 
 // 设备类型选项
 const deviceTypeOptions = [
-  { label: "全部", value: null },
-  { label: "PC端", value: 1 },
-  { label: "移动端", value: 2 },
-  { label: "头像", value: 3 },
-];
+  { label: '全部', value: null },
+  { label: 'PC端', value: 1 },
+  { label: '移动端', value: 2 },
+  { label: '头像', value: 3 }
+]
 
 // 标签选项
 const tagOptions = computed(() => {
-  if (!tags.value || tags.value.length === 0) return [];
+  if (!tags.value || tags.value.length === 0) return []
 
   return tags.value.map((tag: any) => {
     // 处理不同的标签数据结构
-    const name =
-      typeof tag === "string" ? tag : tag.name || tag.label || String(tag);
+    const name
+      = typeof tag === 'string' ? tag : tag.name || tag.label || String(tag)
     return {
       label: name,
-      value: name,
-    };
-  });
-});
+      value: name
+    }
+  })
+})
 
 // 是否有激活的筛选
 const hasActiveFilters = computed(() => {
   return (
-    filters.value.deviceType !== null ||
-    filters.value.category !== "" ||
-    (selectedTags.value && selectedTags.value.length > 0)
-  );
-});
+    filters.value.deviceType !== null
+    || filters.value.category !== ''
+    || (selectedTags.value && selectedTags.value.length > 0)
+  )
+})
 
 // 加载壁纸列表
 const loadWallpapers = async (page = 1, append = false) => {
   try {
     if (page === 1) {
-      loading.value = true;
+      loading.value = true
     } else {
-      loadingMore.value = true;
+      loadingMore.value = true
     }
 
     const response = await getWallpapers({
@@ -147,107 +151,107 @@ const loadWallpapers = async (page = 1, append = false) => {
       deviceType: filters.value.deviceType,
       category: filters.value.category || null,
       tags: selectedTags.value.length > 0 ? selectedTags.value : null,
-      originalFilename: searchQuery.value || null,
-    });
+      originalFilename: searchQuery.value || null
+    })
     // console.log("response", response);
     if (response) {
-      const newWallpapers = response.records || [];
+      const newWallpapers = response.records || []
       if (append) {
-        wallpapers.value = [...wallpapers.value, ...newWallpapers];
+        wallpapers.value = [...wallpapers.value, ...newWallpapers]
       } else {
-        wallpapers.value = newWallpapers;
+        wallpapers.value = newWallpapers
       }
 
-      hasMore.value = newWallpapers.length === pageSize;
-      currentPage.value = page;
+      hasMore.value = newWallpapers.length === pageSize
+      currentPage.value = page
     }
   } catch (err) {
-    console.error("加载壁纸失败:", err);
+    console.error('加载壁纸失败:', err)
   } finally {
-    loading.value = false;
-    loadingMore.value = false;
+    loading.value = false
+    loadingMore.value = false
   }
-};
+}
 
 // 加载更多
 const loadMore = () => {
   if (!loadingMore.value && hasMore.value) {
-    loadWallpapers(currentPage.value + 1, true);
+    loadWallpapers(currentPage.value + 1, true)
   }
-};
+}
 
 // 搜索
 const handleSearch = () => {
-  currentPage.value = 1;
-  loadWallpapers(1, false);
-};
+  currentPage.value = 1
+  loadWallpapers(1, false)
+}
 
 // 清除筛选
 const clearFilters = () => {
   filters.value = {
     deviceType: null,
-    category: "",
-    tags: null,
-  };
-  selectedTags.value = [];
-  searchQuery.value = "";
-  currentPage.value = 1;
-  loadWallpapers(1, false);
-};
+    category: '',
+    tags: null
+  }
+  selectedTags.value = []
+  searchQuery.value = ''
+  currentPage.value = 1
+  loadWallpapers(1, false)
+}
 
 // 监听筛选变化
 watch(
   [() => filters.value.deviceType, () => filters.value.category, selectedTags],
   () => {
-    currentPage.value = 1;
-    loadWallpapers(1, false);
+    currentPage.value = 1
+    loadWallpapers(1, false)
   },
   { deep: true }
-);
+)
 
 // 卡片点击
 const handleCardClick = (wallpaper: PictureResponseInfo) => {
-  navigateTo(`/wallpaper/${wallpaper.id}`);
-};
+  navigateTo(`/wallpaper/${wallpaper.id}`)
+}
 
 // 下载
 const handleDownload = async (wallpaper: PictureResponseInfo) => {
   try {
-    await downloadPicture(wallpaper.id);
+    await downloadPicture(wallpaper.id)
     // 这里可以添加下载逻辑
-    console.log("下载壁纸:", wallpaper.id);
+    console.log('下载壁纸:', wallpaper.id)
   } catch (err) {
-    console.error("下载失败:", err);
+    console.error('下载失败:', err)
   }
-};
+}
 
 // 查看详情
 const handleView = async (wallpaper: PictureResponseInfo) => {
-  await incrementView(wallpaper.id);
-  navigateTo(`/wallpaper/${wallpaper.id}`);
-};
+  await incrementView(wallpaper.id)
+  navigateTo(`/wallpaper/${wallpaper.id}`)
+}
 
 // 加载标签列表
 const loadTags = async () => {
   try {
-    const response = await getTags();
+    const response = await getTags()
     if (Array.isArray(response)) {
-      tags.value = response;
-    } else if (response && typeof response === "object") {
+      tags.value = response
+    } else if (response && typeof response === 'object') {
       // 如果是对象，尝试提取数组
-      tags.value = (response as any).data || (response as any).tags || [];
+      tags.value = (response as any).data || (response as any).tags || []
     } else {
-      tags.value = [];
+      tags.value = []
     }
   } catch (err) {
-    console.error("加载标签失败:", err);
-    tags.value = [];
+    console.error('加载标签失败:', err)
+    tags.value = []
   }
-};
+}
 
 // 初始化
 onMounted(() => {
-  loadWallpapers();
-  loadTags();
-});
+  loadWallpapers()
+  loadTags()
+})
 </script>
