@@ -30,20 +30,21 @@ export const useWallpaper = () => {
       error.value = null
 
       const api = await getApiClient()
-      const response = await api.PicturesService.listWallpapersApiPicturesListGet({
-        pageNum: params?.pageNum || 1,
-        pageSize: params?.pageSize || 20,
-        format: params?.format,
-        minWidth: params?.minWidth,
-        maxWidth: params?.maxWidth,
-        minHeight: params?.minHeight,
-        maxHeight: params?.maxHeight,
-        originalFilename: params?.originalFilename,
-        deviceType: params?.deviceType,
-        status: params?.status,
-        category: params?.category,
-        tags: params?.tags
-      })
+      const response
+        = await api.PicturesService.listWallpapersApiPicturesListGet({
+          pageNum: params?.pageNum || 1,
+          pageSize: params?.pageSize || 20,
+          format: params?.format,
+          minWidth: params?.minWidth,
+          maxWidth: params?.maxWidth,
+          minHeight: params?.minHeight,
+          maxHeight: params?.maxHeight,
+          originalFilename: params?.originalFilename,
+          deviceType: params?.deviceType,
+          status: params?.status,
+          category: params?.category,
+          tags: params?.tags
+        })
 
       return response
     } catch (err: any) {
@@ -82,9 +83,11 @@ export const useWallpaper = () => {
   const incrementView = async (pictureId: number) => {
     try {
       const api = await getApiClient()
-      await api.PicturesService.incrementPictureViewApiPicturesPictureIdViewPost({
-        pictureId
-      })
+      await api.PicturesService.incrementPictureViewApiPicturesPictureIdViewPost(
+        {
+          pictureId
+        }
+      )
     } catch (err: any) {
       console.error('增加预览次数失败:', err)
     }
@@ -92,14 +95,26 @@ export const useWallpaper = () => {
 
   /**
    * 下载图片
+   * 返回图片 Blob 流
    */
-  const downloadPicture = async (pictureId: number) => {
+  const downloadPicture = async (pictureId: number): Promise<Blob> => {
     try {
-      const api = await getApiClient()
-      const response = await api.PicturesService.downloadPictureApiPicturesPictureIdDownloadGet({
-        pictureId
-      })
-      return response
+      const config = useRuntimeConfig()
+      const isDev = import.meta.dev
+      const baseURL = isDev
+        ? '' // 使用相对路径，通过 Nuxt 代理
+        : config.public.apiBaseUrl || 'http://127.0.0.1:8203'
+
+      // 直接使用 axios 下载图片流，确保返回 Blob
+      const { default: axios } = await import('axios')
+      const response = await axios.get(
+        `${baseURL}/api/pictures/${pictureId}/download`,
+        {
+          responseType: 'blob'
+        }
+      )
+
+      return response.data as Blob
     } catch (err: any) {
       error.value = err.message || '下载图片失败'
       throw err

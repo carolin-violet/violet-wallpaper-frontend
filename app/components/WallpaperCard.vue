@@ -14,7 +14,10 @@
         v-else
         class="w-full h-full flex items-center justify-center bg-gray-200 dark:bg-gray-700"
       >
-        <UIcon name="i-lucide-image" class="w-12 h-12 text-gray-400" />
+        <UIcon
+          name="i-lucide-image"
+          class="w-12 h-12 text-gray-400"
+        />
       </div>
 
       <!-- 悬停遮罩 -->
@@ -27,7 +30,6 @@
             color="neutral"
             variant="solid"
             size="sm"
-            :loading="downloading"
             @click.stop="handleDownload"
           />
           <UButton
@@ -59,14 +61,20 @@
           >
             {{ wallpaper.original_filename }}
           </p>
-          <p v-else class="text-sm text-gray-500 dark:text-gray-400">
+          <p
+            v-else
+            class="text-sm text-gray-500 dark:text-gray-400"
+          >
             未命名壁纸
           </p>
         </div>
       </div>
 
       <!-- 标签 -->
-      <div v-if="tags && tags.length > 0" class="mt-2 flex flex-wrap gap-1">
+      <div
+        v-if="tags && tags.length > 0"
+        class="mt-2 flex flex-wrap gap-1"
+      >
         <UBadge
           v-for="tag in tags.slice(0, 3)"
           :key="tag"
@@ -91,11 +99,20 @@
         class="mt-2 flex items-center gap-3 text-xs text-gray-500 dark:text-gray-400"
       >
         <div class="flex items-center gap-1">
-          <UIcon name="i-lucide-eye" class="w-3 h-3" />
+          <UIcon
+            name="i-lucide-eye"
+            class="w-3 h-3"
+          />
           <span>{{ wallpaper.view_count || 0 }}</span>
         </div>
-        <div v-if="wallpaper.category" class="flex items-center gap-1">
-          <UIcon name="i-lucide-folder" class="w-3 h-3" />
+        <div
+          v-if="wallpaper.category"
+          class="flex items-center gap-1"
+        >
+          <UIcon
+            name="i-lucide-folder"
+            class="w-3 h-3"
+          />
           <span>{{ wallpaper.category }}</span>
         </div>
       </div>
@@ -104,77 +121,38 @@
 </template>
 
 <script setup lang="ts">
-import type { PictureResponseInfo } from "~/api/generated/services/PicturesService";
+import type { PictureResponseInfo } from '~/api/generated/services/PicturesService'
 
 interface Props {
-  wallpaper: PictureResponseInfo;
-  tags?: string[];
+  wallpaper: PictureResponseInfo
+  tags?: string[]
 }
 
-const props = defineProps<Props>();
+const props = defineProps<Props>()
 
 const emit = defineEmits<{
-  click: [wallpaper: PictureResponseInfo];
-  download: [wallpaper: PictureResponseInfo];
-  view: [wallpaper: PictureResponseInfo];
-}>();
+  click: [wallpaper: PictureResponseInfo]
+  download: [wallpaper: PictureResponseInfo]
+  view: [wallpaper: PictureResponseInfo]
+}>()
 
-const { downloadPicture } = useWallpaper();
-const downloading = ref(false);
-const showPreview = ref(false);
+const { incrementView } = useWallpaper()
 
 const handleClick = () => {
-  emit("click", props.wallpaper);
-};
+  emit('click', props.wallpaper)
+}
 
-const handleDownload = async () => {
-  if (!props.wallpaper.id) return;
+const handleDownload = () => {
+  // 只触发事件，让父组件处理下载逻辑
+  emit('download', props.wallpaper)
+}
 
-  try {
-    downloading.value = true;
-    const response = await downloadPicture(props.wallpaper.id);
-
-    // 如果响应包含下载 URL，则触发下载
-    if (response && typeof response === "object" && "url" in response) {
-      const downloadUrl = (response as { url?: string }).url;
-      if (downloadUrl) {
-        const link = document.createElement("a");
-        link.href = downloadUrl;
-        link.download =
-          props.wallpaper.original_filename ||
-          `wallpaper-${props.wallpaper.id}`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-      }
-    } else if (props.wallpaper.webp_url || props.wallpaper.thumbnail_url) {
-      // 如果没有返回下载 URL，使用 webp_url 或 thumbnail_url
-      const imageUrl =
-        props.wallpaper.webp_url || props.wallpaper.thumbnail_url;
-      if (imageUrl) {
-        const link = document.createElement("a");
-        link.href = imageUrl;
-        link.download =
-          props.wallpaper.original_filename ||
-          `wallpaper-${props.wallpaper.id}`;
-        link.target = "_blank";
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-      }
-    }
-
-    emit("download", props.wallpaper);
-  } catch (err) {
-    console.error("下载失败:", err);
-    // 可以在这里显示错误提示
-  } finally {
-    downloading.value = false;
+const handleView = async () => {
+  // 增加预览次数
+  if (props.wallpaper.id) {
+    await incrementView(props.wallpaper.id)
   }
-};
-
-const handleView = () => {
-  showPreview.value = true;
-  emit("view", props.wallpaper);
-};
+  // 触发 view 事件，让父组件显示预览弹窗
+  emit('view', props.wallpaper)
+}
 </script>

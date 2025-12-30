@@ -42,7 +42,7 @@
         <UButton
           v-if="hasActiveFilters"
           variant="ghost"
-          color="gray"
+          color="neutral"
           @click="clearFilters"
         >
           清除筛选
@@ -66,7 +66,7 @@
     <!-- 错误提示 -->
     <UAlert
       v-if="error"
-      color="red"
+      color="error"
       variant="soft"
       :title="error"
       class="mt-4"
@@ -217,8 +217,30 @@ const handleCardClick = (wallpaper: PictureResponseInfo) => {
 // 下载
 const handleDownload = async (wallpaper: PictureResponseInfo) => {
   try {
-    await downloadPicture(wallpaper.id)
-    // 这里可以添加下载逻辑
+    const blob = await downloadPicture(wallpaper.id)
+
+    // 创建下载链接
+    const url = window.URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+
+    // 从响应头或文件名获取文件扩展名
+    const filename = wallpaper.original_filename || `wallpaper-${wallpaper.id}`
+    // 如果文件名没有扩展名，尝试从 blob type 推断
+    let downloadFilename = filename
+    if (!filename.includes('.')) {
+      const extension = blob.type.split('/')[1] || 'jpg'
+      downloadFilename = `${filename}.${extension}`
+    }
+
+    link.download = downloadFilename
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+
+    // 释放 URL 对象
+    window.URL.revokeObjectURL(url)
+
     console.log('下载壁纸:', wallpaper.id)
   } catch (err) {
     console.error('下载失败:', err)
