@@ -33,12 +33,20 @@
       v-else
       class="flex flex-col items-center justify-center py-20 text-center"
     >
-      <UIcon name="i-lucide-image-off" class="w-16 h-16 text-gray-400 mb-4" />
-      <p class="text-gray-500 dark:text-gray-400">暂无壁纸</p>
+      <UIcon
+        name="i-lucide-image-off"
+        class="w-16 h-16 text-gray-400 mb-4"
+      />
+      <p class="text-gray-500 dark:text-gray-400">
+        暂无壁纸
+      </p>
     </div>
 
     <!-- 加载更多按钮 -->
-    <div v-if="hasMore && !loading" class="flex justify-center mt-8">
+    <div
+      v-if="hasMore && !loading"
+      class="flex justify-center mt-8"
+    >
       <UButton
         size="lg"
         variant="outline"
@@ -57,7 +65,7 @@
         wrapper: 'fixed inset-0 w-screen h-screen max-w-none z-[9999]',
         overlay: 'fixed inset-0 bg-black/50 z-[9999]',
         content:
-          'fixed inset-0 w-full h-full max-w-none m-0 flex items-center justify-center z-[9999]',
+          'fixed inset-0 w-full h-full max-w-none m-0 flex items-center justify-center z-[9999]'
       }"
     >
       <UCard
@@ -94,7 +102,10 @@
             v-else
             class="aspect-video flex items-center justify-center bg-gray-200 dark:bg-gray-700"
           >
-            <UIcon name="i-lucide-image" class="w-16 h-16 text-gray-400" />
+            <UIcon
+              name="i-lucide-image"
+              class="w-16 h-16 text-gray-400"
+            />
           </div>
         </div>
       </UCard>
@@ -103,72 +114,72 @@
 </template>
 
 <script setup lang="ts">
-import type { PictureResponseInfo } from "~/api/generated/services/PicturesService";
+import type { PictureResponseInfo } from '~/api/generated/services/PicturesService'
 
 interface Props {
-  wallpapers: PictureResponseInfo[];
-  loading?: boolean;
-  loadingMore?: boolean;
-  hasMore?: boolean;
-  tagsMap?: Record<number, string[]>;
+  wallpapers: PictureResponseInfo[]
+  loading?: boolean
+  loadingMore?: boolean
+  hasMore?: boolean
+  tagsMap?: Record<number, string[]>
 }
 
 const props = withDefaults(defineProps<Props>(), {
   loading: false,
   loadingMore: false,
-  hasMore: false,
-});
+  hasMore: false
+})
 
 const emit = defineEmits<{
-  "load-more": [];
-  "card-click": [wallpaper: PictureResponseInfo];
-  download: [wallpaper: PictureResponseInfo];
-  view: [wallpaper: PictureResponseInfo];
-}>();
+  'load-more': []
+  'card-click': [wallpaper: PictureResponseInfo]
+  'download': [wallpaper: PictureResponseInfo]
+  'view': [wallpaper: PictureResponseInfo]
+}>()
 
 const getTagsForWallpaper = (wallpaper: PictureResponseInfo): string[] => {
   if (props.tagsMap && wallpaper.id) {
-    return props.tagsMap[wallpaper.id] || [];
+    return props.tagsMap[wallpaper.id] || []
   }
-  return [];
-};
+  return []
+}
 
 const loadMore = () => {
-  emit("load-more");
-};
+  emit('load-more')
+}
 
 const handleCardClick = (wallpaper: PictureResponseInfo) => {
-  emit("card-click", wallpaper);
-};
+  emit('card-click', wallpaper)
+}
 
 const handleDownload = (wallpaper: PictureResponseInfo) => {
-  emit("download", wallpaper);
-};
+  emit('download', wallpaper)
+}
 
-const showPreview = ref(false);
-const previewWallpaper = ref<PictureResponseInfo | null>(null);
-const isClosing = ref(false);
+const showPreview = ref(false)
+const previewWallpaper = ref<PictureResponseInfo | null>(null)
+const isClosing = ref(false)
 
 const handleView = (wallpaper: PictureResponseInfo) => {
   // 如果正在关闭，忽略新的预览请求
   if (isClosing.value) {
-    return;
+    return
   }
-  previewWallpaper.value = wallpaper;
-  showPreview.value = true;
+  previewWallpaper.value = wallpaper
+  showPreview.value = true
   // 不向上传递 view 事件，避免导航到详情页
   // 预览次数已在 WallpaperCard 中增加
-};
+}
 
 const closePreview = () => {
-  isClosing.value = true;
-  showPreview.value = false;
+  isClosing.value = true
+  showPreview.value = false
   // 延迟清空预览壁纸和关闭标志，避免关闭动画时内容消失
   setTimeout(() => {
-    previewWallpaper.value = null;
-    isClosing.value = false;
-  }, 300);
-};
+    previewWallpaper.value = null
+    isClosing.value = false
+  }, 300)
+}
 </script>
 
 <style>
@@ -181,6 +192,9 @@ const closePreview = () => {
 .wallpaper-preview-modal [role="dialog"] > div {
   position: fixed !important;
   z-index: 9999 !important;
+  top: 50%;
+  left: 50%;
+  transform: translate3d(-50%, -50%, 0);
 }
 
 /* 确保 wrapper 覆盖整个屏幕 */

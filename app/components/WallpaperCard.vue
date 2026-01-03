@@ -25,13 +25,13 @@
         class="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-all duration-300 flex items-center justify-center opacity-0 group-hover:opacity-100"
       >
         <div class="flex gap-2">
-          <UButton
+          <!-- <UButton
             icon="i-lucide-download"
             color="neutral"
             variant="solid"
             size="sm"
             @click.stop="handleDownload"
-          />
+          /> -->
           <UButton
             icon="i-lucide-eye"
             color="neutral"
@@ -69,14 +69,13 @@
           </p>
         </div>
       </div>
-
       <!-- 标签 -->
       <div
-        v-if="tags && tags.length > 0"
+        v-if="wallpaper.tags && wallpaper.tags.length > 0"
         class="mt-2 flex flex-wrap gap-1"
       >
         <UBadge
-          v-for="tag in tags.slice(0, 3)"
+          v-for="tag in wallpaper.tags.slice(0, 3)"
           :key="tag"
           color="primary"
           variant="subtle"
@@ -85,12 +84,12 @@
           {{ tag }}
         </UBadge>
         <UBadge
-          v-if="tags.length > 3"
+          v-if="wallpaper.tags.length > 3"
           color="neutral"
           variant="subtle"
           size="xs"
         >
-          +{{ tags.length - 3 }}
+          +{{ wallpaper.tags.length - 3 }}
         </UBadge>
       </div>
 
@@ -105,6 +104,13 @@
           />
           <span>{{ wallpaper.view_count || 0 }}</span>
         </div>
+        <div class="flex items-center gap-1">
+          <UIcon
+            name="i-lucide-download"
+            class="w-3 h-3"
+          />
+          <span>{{ wallpaper.download_count || 0 }}</span>
+        </div>
         <div
           v-if="wallpaper.category"
           class="flex items-center gap-1"
@@ -113,7 +119,7 @@
             name="i-lucide-folder"
             class="w-3 h-3"
           />
-          <span>{{ wallpaper.category }}</span>
+          <span>{{ categoryName }}</span>
         </div>
       </div>
     </div>
@@ -125,7 +131,6 @@ import type { PictureResponseInfo } from '~/api/generated/services/PicturesServi
 
 interface Props {
   wallpaper: PictureResponseInfo
-  tags?: string[]
 }
 
 const props = defineProps<Props>()
@@ -137,15 +142,26 @@ const emit = defineEmits<{
 }>()
 
 const { incrementView } = useWallpaper()
+const { getDictionaryName, initDictionaries } = useDictionary()
+
+// 初始化字典数据
+onMounted(() => {
+  initDictionaries()
+})
+
+// 计算 category 的中文名称
+const categoryName = computed(() => {
+  return getDictionaryName(props.wallpaper.category)
+})
 
 const handleClick = () => {
   emit('click', props.wallpaper)
 }
 
-const handleDownload = () => {
-  // 只触发事件，让父组件处理下载逻辑
-  emit('download', props.wallpaper)
-}
+// const handleDownload = () => {
+//   // 只触发事件，让父组件处理下载逻辑
+//   emit("download", props.wallpaper);
+// };
 
 const handleView = async () => {
   // 增加预览次数
