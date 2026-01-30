@@ -11,8 +11,9 @@ let generatedModules: Record<string, any> | null = null
 
 /**
  * 初始化 API 客户端配置
+ * @param overrideBaseURL 外部传入的 baseURL，用于 useAsyncData 等无 Nuxt 上下文的场景，避免内部调用 useRuntimeConfig()
  */
-async function initApiClient() {
+async function initApiClient(overrideBaseURL?: string) {
   if (!isInitialized) {
     try {
       generatedModules = await import('./generated')
@@ -23,15 +24,16 @@ async function initApiClient() {
         )
       }
 
-      // 配置 OpenAPI 基础设置
-      const config = useRuntimeConfig()
-
-      // 在开发环境中使用代理路径，避免 CORS 问题
-      // 生产环境使用完整 URL
-      const isDev = import.meta.dev
-      const baseURL = isDev
-        ? '' // 使用相对路径，通过 Nuxt 代理
-        : config.public.apiBaseUrl || 'http://127.0.0.1:8203'
+      const baseURL
+        = overrideBaseURL !== undefined
+          ? overrideBaseURL
+          : (() => {
+              const config = useRuntimeConfig()
+              const isDev = import.meta.dev
+              return isDev
+                ? ''
+                : config.public.apiBaseUrl || 'http://127.0.0.1:8203'
+            })()
 
       generatedModules.OpenAPI.BASE = baseURL
       generatedModules.OpenAPI.VERSION = '1.0.0'
@@ -55,10 +57,10 @@ async function initApiClient() {
 
 /**
  * 获取 API 客户端
- * 返回包含所有服务类的对象
+ * @param baseURL 可选，传入时在无 Nuxt 上下文（如 useAsyncData fetcher）中也可安全初始化，避免 useRuntimeConfig() 报错
  */
 export async function getApiClient(baseURL?: string) {
-  const modules = await initApiClient()
+  const modules = await initApiClient(baseURL)
 
   if (baseURL && modules?.OpenAPI) {
     modules.OpenAPI.BASE = baseURL

@@ -179,11 +179,56 @@ import type { PictureResponseInfo } from '~/api/generated/services/PicturesServi
 
 const route = useRoute()
 const router = useRouter()
-const { getWallpapers, downloadPicture, incrementView, loading, error }
-  = useWallpaper()
+const { getWallpapers, downloadPicture, incrementView } = useWallpaper()
 
-const wallpaper = ref<PictureResponseInfo | null>(null)
-const tags = ref<string[]>([])
+const id = computed(() => Number(route.params.id))
+
+const config = useRuntimeConfig()
+const defaultApiBase = (config.public.apiBaseUrl as string) || 'http://127.0.0.1:8203'
+const ssrBaseURL = import.meta.server
+  ? defaultApiBase
+  : (import.meta.dev ? '' : defaultApiBase)
+
+// SSR：服务端根据 id 拉取壁纸列表并取当前 id 对应项（无单独详情接口）
+const {
+  data: wallpaperData,
+  pending: loading,
+  error: fetchError
+} = useAsyncData(
+  () => `wallpaper-${route.params.id}`,
+  async () => {
+    const pid = id.value
+    if (!pid) return { wallpaper: null as PictureResponseInfo | null, error: '无效的壁纸ID' }
+
+    const response = await getWallpapers(
+      { pageNum: 1, pageSize: 100 },
+      ssrBaseURL
+    )
+
+    if (!response?.records) {
+      return { wallpaper: null, error: null }
+    }
+
+    const found = response.records.find(
+      (w: PictureResponseInfo) => w.id === pid
+    )
+    if (!found) {
+      return { wallpaper: null, error: '壁纸不存在' }
+    }
+    return { wallpaper: found, error: null }
+  },
+  { watch: [id] }
+)
+
+const wallpaper = computed(() => wallpaperData.value?.wallpaper ?? null)
+const error = computed(() => fetchError.value?.message ?? wallpaperData.value?.error ?? null)
+
+// 仅客户端：增加预览次数（不在 SSR 中调用，避免每次请求都 +1）
+onMounted(() => {
+  if (id.value && wallpaper.value) {
+    incrementView(id.value)
+  }
+})
 
 // 获取设备类型名称
 const getDeviceTypeName = (type: number | null) => {
@@ -195,89 +240,33 @@ const getDeviceTypeName = (type: number | null) => {
   return type ? map[type] || '未知' : '未知'
 }
 
-// 加载壁纸详情
-const loadWallpaper = async () => {
-  const id = Number(route.params.id)
-  if (!id) {
-    error.value = '无效的壁纸ID'
-    return
-  }
+const tags = computed(() => wallpaper.value?.tags ?? [])
 
-  try {
-    // 通过列表接口查找指定ID的壁纸
-    // 注意：如果后端有单独的详情接口，应该使用详情接口
-    const response = await getWallpapers({
-      pageNum: 1,
-      pageSize: 100
-    })
-
-    if (response && response.records) {
-      const found = response.records.find(
-        (w: PictureResponseInfo) => w.id === id
-      )
-      if (found) {
-        wallpaper.value = found
-        // 增加预览次数
-        await incrementView(id)
-      } else {
-        error.value = '壁纸不存在'
-      }
-    }
-  } catch (err) {
-    console.error('加载壁纸详情失败:', err)
-  }
-}
-
-// 下载
 const handleDownload = async () => {
   if (!wallpaper.value) return
-
   try {
     await downloadPicture(wallpaper.value.id)
-    // 这里可以添加实际的下载逻辑
-    console.log('下载壁纸:', wallpaper.value.id)
   } catch (err) {
     console.error('下载失败:', err)
   }
 }
 
-// 分享
 const handleShare = () => {
-  if (navigator.share && wallpaper.value) {
+  if (typeof navigator !== 'undefined' && navigator.share && wallpaper.value) {
     navigator.share({
       title: wallpaper.value.original_filename || '壁纸',
       url: window.location.href
     })
-  } else {
-    // 复制链接到剪贴板
+  } else if (typeof navigator !== 'undefined' && navigator.clipboard) {
     navigator.clipboard.writeText(window.location.href)
-    // 这里可以显示一个提示
   }
 }
 
-// 按标签搜索
 const searchByTag = (tag: string) => {
-  router.push({
-    path: '/',
-    query: { tag }
-  })
+  router.push({ path: '/', query: { tag } })
 }
 
-// 返回
 const goBack = () => {
   router.back()
 }
-
-// 初始化
-onMounted(() => {
-  loadWallpaper()
-})
-
-// 监听路由变化
-watch(
-  () => route.params.id,
-  () => {
-    loadWallpaper()
-  }
-)
 </script>

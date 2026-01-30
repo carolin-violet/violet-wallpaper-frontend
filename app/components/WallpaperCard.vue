@@ -1,18 +1,19 @@
 <template>
   <div
-    class="group relative overflow-hidden rounded-lg bg-gray-100 dark:bg-gray-800 cursor-pointer transition-all duration-300 hover:shadow-xl hover:scale-[1.02]"
+    class="group relative overflow-hidden rounded-lg bg-gray-100 dark:bg-gray-800 cursor-pointer transition-all duration-300 hover:shadow-xl hover:scale-[1.02] w-full min-w-0 max-w-full"
     @click="handleClick"
   >
-    <!-- 图片容器 -->
-    <div class="relative aspect-video w-full overflow-hidden">
+    <!-- 图片容器：固定比例，图片填满并裁剪 -->
+    <div class="wallpaper-image-container">
       <NuxtImg
         v-if="wallpaper.thumbnail_url"
         :src="wallpaper.thumbnail_url"
         :alt="wallpaper.original_filename || '壁纸'"
+        class="wallpaper-image"
       />
       <div
         v-else
-        class="w-full h-full flex items-center justify-center bg-gray-200 dark:bg-gray-700"
+        class="wallpaper-image-placeholder"
       >
         <UIcon
           name="i-lucide-image"
@@ -172,3 +173,4 @@ const handleView = async () => {
   emit('view', props.wallpaper)
 }
 </script>
+

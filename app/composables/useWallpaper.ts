@@ -10,26 +10,30 @@ export const useWallpaper = () => {
 
   /**
    * 获取壁纸列表
+   * @param baseURL 可选，SSR/useAsyncData 等无 Nuxt 上下文时由调用方传入，避免 getApiClient 内 useRuntimeConfig 报错
    */
-  const getWallpapers = async (params?: {
-    pageNum?: number
-    pageSize?: number
-    format?: string | null
-    minWidth?: number | null
-    maxWidth?: number | null
-    minHeight?: number | null
-    maxHeight?: number | null
-    originalFilename?: string | null
-    deviceType?: number | null
-    status?: number | null
-    category?: string | null
-    tags?: string[] | null
-  }) => {
+  const getWallpapers = async (
+    params?: {
+      pageNum?: number
+      pageSize?: number
+      format?: string | null
+      minWidth?: number | null
+      maxWidth?: number | null
+      minHeight?: number | null
+      maxHeight?: number | null
+      originalFilename?: string | null
+      deviceType?: number | null
+      status?: number | null
+      category?: string | null
+      tags?: string[] | null
+    },
+    baseURL?: string
+  ) => {
     try {
       loading.value = true
       error.value = null
 
-      const api = await getApiClient()
+      const api = await getApiClient(baseURL)
       const response
         = await api.PicturesService.listWallpapersApiPicturesListGet({
           pageNum: params?.pageNum || 1,
@@ -57,10 +61,11 @@ export const useWallpaper = () => {
 
   /**
    * 获取标签列表
+   * @param baseURL 可选，SSR/useAsyncData 等无 Nuxt 上下文时由调用方传入
    */
-  const getTags = async () => {
+  const getTags = async (baseURL?: string) => {
     try {
-      const api = await getApiClient()
+      const api = await getApiClient(baseURL)
       const response = await api.TagsService.listTagsApiTagsListGet()
 
       // 处理响应数据，可能是数组或对象

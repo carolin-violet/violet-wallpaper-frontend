@@ -10,25 +10,21 @@ interface DictionaryItem {
   [key: string]: any
 }
 
-// 使用 useState 创建全局共享状态，避免多次请求
-const dictionaries = useState<DictionaryItem[]>('dictionaries', () => [])
-const loading = useState<boolean>('dictionaries-loading', () => false)
-const error = useState<string | null>('dictionaries-error', () => null)
-
 export const useDictionary = () => {
+  // useState 必须在 setup/plugin 上下文中调用，故放在 composable 内部；相同 key 仍会跨组件共享
+  const dictionaries = useState<DictionaryItem[]>('dictionaries', () => [])
+  const loading = useState<boolean>('dictionaries-loading', () => false)
+  const error = useState<string | null>('dictionaries-error', () => null)
   /**
    * 获取字典数据
-   * 使用全局共享状态，多个组件调用时只会请求一次
+   * @param baseURL 可选，SSR/useAsyncData 等无 Nuxt 上下文时由调用方传入，避免 getApiClient 内 useRuntimeConfig 报错
    */
-  const getDictionaries = async () => {
-    // 如果已有数据，直接返回
+  const getDictionaries = async (baseURL?: string) => {
     if (dictionaries.value.length > 0) {
       return dictionaries.value
     }
 
-    // 如果正在加载，等待加载完成
     if (loading.value) {
-      // 等待加载完成
       while (loading.value) {
         await new Promise(resolve => setTimeout(resolve, 50))
       }
@@ -39,7 +35,7 @@ export const useDictionary = () => {
       loading.value = true
       error.value = null
 
-      const api = await getApiClient()
+      const api = await getApiClient(baseURL)
       const response
         = await api.DictionariesService.getAllDictionariesApiDictionariesGet()
 

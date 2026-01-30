@@ -82,11 +82,38 @@ const {
   getTags,
   incrementView,
   downloadPicture,
-  loading,
+  loading: wallpaperLoading,
   error
 } = useWallpaper()
 
-// 状态
+const pageSize = 20
+
+// 在 setup 中取 baseURL，传入 useAsyncData fetcher，避免 fetcher 内调用 useRuntimeConfig() 报错
+// 服务端必须用绝对 URL，否则 Node/axios 会报 Invalid URL；仅客户端在 dev 下可用相对路径走代理
+const config = useRuntimeConfig()
+const defaultApiBase = (config.public.apiBaseUrl as string) || 'http://127.0.0.1:8203'
+const ssrBaseURL = import.meta.server
+  ? defaultApiBase
+  : (import.meta.dev ? '' : defaultApiBase)
+
+// SSR：首屏壁纸、标签、字典在服务端请求
+const { data: initialWallpapers, pending: initialPending } = useAsyncData(
+  'index-wallpapers',
+  () => getWallpapers({ pageNum: 1, pageSize }, ssrBaseURL)
+)
+
+const { data: tagsData } = useAsyncData(
+  'index-tags',
+  () => getTags(ssrBaseURL)
+)
+
+useAsyncData('index-dictionaries', async () => {
+  const { getDictionaries } = useDictionary()
+  await getDictionaries(ssrBaseURL)
+  return null
+})
+
+// 状态：首屏数据同步到 ref，便于客户端筛选/加载更多
 const wallpapers = ref<PictureResponseInfo[]>([])
 const tags = ref<any[]>([])
 const tagsMap = ref<Record<number, string[]>>({})
@@ -95,7 +122,6 @@ const selectedTags = ref<string[]>([])
 const loadingMore = ref(false)
 const hasMore = ref(false)
 const currentPage = ref(1)
-const pageSize = 20
 
 // 筛选器
 const filters = ref({
@@ -103,6 +129,35 @@ const filters = ref({
   category: '',
   tags: null as string[] | null
 })
+
+watch(
+  initialWallpapers,
+  (v) => {
+    if (v?.records) {
+      wallpapers.value = v.records
+      hasMore.value = v.records.length === pageSize
+      currentPage.value = 1
+    }
+  },
+  { immediate: true }
+)
+
+watch(
+  tagsData,
+  (v) => {
+    if (Array.isArray(v)) {
+      tags.value = v
+    } else if (v && typeof v === 'object') {
+      tags.value = (v as any).data ?? (v as any).tags ?? []
+    } else {
+      tags.value = []
+    }
+  },
+  { immediate: true }
+)
+
+// 合并 SSR 与客户端 loading
+const loading = computed(() => initialPending.value || wallpaperLoading.value)
 
 // 设备类型选项
 const deviceTypeOptions = [
@@ -117,13 +172,9 @@ const tagOptions = computed(() => {
   if (!tags.value || tags.value.length === 0) return []
 
   return tags.value.map((tag: any) => {
-    // 处理不同的标签数据结构
     const name
       = typeof tag === 'string' ? tag : tag.name || tag.label || String(tag)
-    return {
-      label: name,
-      value: name
-    }
+    return { label: name, value: name }
   })
 })
 
@@ -136,11 +187,11 @@ const hasActiveFilters = computed(() => {
   )
 })
 
-// 加载壁纸列表
+// 客户端：加载壁纸（筛选、加载更多）
 const loadWallpapers = async (page = 1, append = false) => {
   try {
     if (page === 1) {
-      loading.value = true
+      wallpaperLoading.value = true
     } else {
       loadingMore.value = true
     }
@@ -153,7 +204,7 @@ const loadWallpapers = async (page = 1, append = false) => {
       tags: selectedTags.value.length > 0 ? selectedTags.value : null,
       originalFilename: searchQuery.value || null
     })
-    // console.log("response", response);
+
     if (response) {
       const newWallpapers = response.records || []
       if (append) {
@@ -161,32 +212,28 @@ const loadWallpapers = async (page = 1, append = false) => {
       } else {
         wallpapers.value = newWallpapers
       }
-
       hasMore.value = newWallpapers.length === pageSize
       currentPage.value = page
     }
   } catch (err) {
     console.error('加载壁纸失败:', err)
   } finally {
-    loading.value = false
+    wallpaperLoading.value = false
     loadingMore.value = false
   }
 }
 
-// 加载更多
 const loadMore = () => {
   if (!loadingMore.value && hasMore.value) {
     loadWallpapers(currentPage.value + 1, true)
   }
 }
 
-// 搜索
 const handleSearch = () => {
   currentPage.value = 1
   loadWallpapers(1, false)
 }
 
-// 清除筛选
 const clearFilters = () => {
   filters.value = {
     deviceType: null,
@@ -199,7 +246,6 @@ const clearFilters = () => {
   loadWallpapers(1, false)
 }
 
-// 监听筛选变化
 watch(
   [() => filters.value.deviceType, () => filters.value.category, selectedTags],
   () => {
@@ -209,71 +255,34 @@ watch(
   { deep: true }
 )
 
-// 卡片点击
 const handleCardClick = (wallpaper: PictureResponseInfo) => {
   navigateTo(`/wallpaper/${wallpaper.id}`)
 }
 
-// 下载
 const handleDownload = async (wallpaper: PictureResponseInfo) => {
   try {
     const blob = await downloadPicture(wallpaper.id)
-
-    // 创建下载链接
     const url = window.URL.createObjectURL(blob)
     const link = document.createElement('a')
     link.href = url
-
-    // 从响应头或文件名获取文件扩展名
     const filename = wallpaper.original_filename || `wallpaper-${wallpaper.id}`
-    // 如果文件名没有扩展名，尝试从 blob type 推断
     let downloadFilename = filename
     if (!filename.includes('.')) {
       const extension = blob.type.split('/')[1] || 'jpg'
       downloadFilename = `${filename}.${extension}`
     }
-
     link.download = downloadFilename
     document.body.appendChild(link)
     link.click()
     document.body.removeChild(link)
-
-    // 释放 URL 对象
     window.URL.revokeObjectURL(url)
-
-    console.log('下载壁纸:', wallpaper.id)
   } catch (err) {
     console.error('下载失败:', err)
   }
 }
 
-// 查看详情
 const handleView = async (wallpaper: PictureResponseInfo) => {
   await incrementView(wallpaper.id)
   navigateTo(`/wallpaper/${wallpaper.id}`)
 }
-
-// 加载标签列表
-const loadTags = async () => {
-  try {
-    const response = await getTags()
-    if (Array.isArray(response)) {
-      tags.value = response
-    } else if (response && typeof response === 'object') {
-      // 如果是对象，尝试提取数组
-      tags.value = (response as any).data || (response as any).tags || []
-    } else {
-      tags.value = []
-    }
-  } catch (err) {
-    console.error('加载标签失败:', err)
-    tags.value = []
-  }
-}
-
-// 初始化
-onMounted(() => {
-  loadWallpapers()
-  loadTags()
-})
 </script>

@@ -1,45 +1,58 @@
 <template>
-  <div>
-    <!-- 加载状态 -->
+  <div class="w-full">
+
+    <!-- 加载状态：固定卡片宽度 + flex-wrap 自适应换行 -->
     <div
       v-if="loading"
-      class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4"
+      class="flex flex-wrap gap-3 sm:gap-4 w-full justify-start"
     >
       <div
         v-for="i in 10"
         :key="i"
-        class="rounded-lg bg-gray-200 dark:bg-gray-700 animate-pulse aspect-video"
-      />
+        class="wallpaper-card-wrapper"
+      >
+        <div class="rounded-lg bg-gray-200 dark:bg-gray-700 animate-pulse aspect-video w-full" />
+      </div>
     </div>
 
-    <!-- 壁纸网格 -->
-    <div
-      v-else-if="wallpapers && wallpapers.length > 0"
-      class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4"
-    >
-      <WallpaperCard
-        v-for="wallpaper in wallpapers"
-        :key="wallpaper.id"
-        :wallpaper="wallpaper"
-        :tags="getTagsForWallpaper(wallpaper)"
-        @click="handleCardClick"
-        @download="handleDownload"
-        @view="handleView"
-      />
-    </div>
-
-    <!-- 空状态 -->
+    <!-- 非加载状态：有数据显示网格，无数据显示空状态 -->
     <div
       v-else
-      class="flex flex-col items-center justify-center py-20 text-center"
+      class="w-full"
     >
-      <UIcon
-        name="i-lucide-image-off"
-        class="w-16 h-16 text-gray-400 mb-4"
-      />
-      <p class="text-gray-500 dark:text-gray-400">
-        暂无壁纸
-      </p>
+      <!-- 有数据：固定卡片宽度 + flex-wrap 自适应多列布局 -->
+      <div
+        v-if="wallpapers && wallpapers.length > 0"
+        class="flex flex-wrap gap-3 sm:gap-4 w-full justify-start"
+      >
+        <div
+          v-for="wallpaper in wallpapers"
+          :key="wallpaper.id"
+          class="wallpaper-card-wrapper"
+        >
+          <WallpaperCard
+            :wallpaper="wallpaper"
+            :tags="getTagsForWallpaper(wallpaper)"
+            @click="handleCardClick"
+            @download="handleDownload"
+            @view="handleView"
+          />
+        </div>
+      </div>
+
+      <!-- 空状态 -->
+      <div
+        v-else
+        class="flex flex-col items-center justify-center py-20 text-center"
+      >
+        <UIcon
+          name="i-lucide-image-off"
+          class="w-16 h-16 text-gray-400 mb-4"
+        />
+        <p class="text-gray-500 dark:text-gray-400">
+          暂无壁纸
+        </p>
+      </div>
     </div>
 
     <!-- 加载更多按钮 -->
@@ -181,6 +194,16 @@ const closePreview = () => {
   }, 300)
 }
 </script>
+
+<style scoped>
+/* 确保网格项可以收缩，防止撑开列 */
+.wallpaper-grid-wrapper > * {
+  min-width: 0 !important;
+  overflow: hidden !important;
+  width: 100% !important;
+}
+</style>
+
 
 <style>
 /* 强制设置预览弹窗的 z-index 和定位 */
