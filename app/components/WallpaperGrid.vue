@@ -4,14 +4,14 @@
     <!-- 加载状态：固定卡片宽度 + flex-wrap 自适应换行 -->
     <div
       v-if="loading"
-      class="flex flex-wrap gap-3 sm:gap-4 w-full justify-start"
+      class="flex flex-wrap gap-4 sm:gap-6 w-full justify-center"
     >
       <div
-        v-for="i in 10"
+        v-for="i in 12"
         :key="i"
         class="wallpaper-card-wrapper"
       >
-        <div class="rounded-lg bg-gray-200 dark:bg-gray-700 animate-pulse aspect-video w-full" />
+        <div class="rounded-[1.25rem] bg-gray-200 dark:bg-gray-700 animate-pulse aspect-4/3 w-full" />
       </div>
     </div>
 
@@ -23,7 +23,7 @@
       <!-- 有数据：固定卡片宽度 + flex-wrap 自适应多列布局 -->
       <div
         v-if="wallpapers && wallpapers.length > 0"
-        class="flex flex-wrap gap-3 sm:gap-4 w-full justify-start"
+        class="flex flex-wrap gap-4 sm:gap-6 w-full justify-center"
       >
         <div
           v-for="wallpaper in wallpapers"
@@ -53,21 +53,6 @@
           暂无壁纸
         </p>
       </div>
-    </div>
-
-    <!-- 加载更多按钮 -->
-    <div
-      v-if="hasMore && !loading"
-      class="flex justify-center mt-8"
-    >
-      <UButton
-        size="lg"
-        variant="outline"
-        :loading="loadingMore"
-        @click="loadMore"
-      >
-        加载更多
-      </UButton>
     </div>
 
     <!-- 预览弹窗 -->
@@ -132,19 +117,14 @@ import type { PictureResponseInfo } from '~/api/generated/services/PicturesServi
 interface Props {
   wallpapers: PictureResponseInfo[]
   loading?: boolean
-  loadingMore?: boolean
-  hasMore?: boolean
   tagsMap?: Record<number, string[]>
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  loading: false,
-  loadingMore: false,
-  hasMore: false
+  loading: false
 })
 
 const emit = defineEmits<{
-  'load-more': []
   'card-click': [wallpaper: PictureResponseInfo]
   'download': [wallpaper: PictureResponseInfo]
   'view': [wallpaper: PictureResponseInfo]
@@ -155,10 +135,6 @@ const getTagsForWallpaper = (wallpaper: PictureResponseInfo): string[] => {
     return props.tagsMap[wallpaper.id] || []
   }
   return []
-}
-
-const loadMore = () => {
-  emit('load-more')
 }
 
 const handleCardClick = (wallpaper: PictureResponseInfo) => {

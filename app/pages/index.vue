@@ -1,5 +1,5 @@
 <template>
-  <div class="container mx-auto px-4 py-8">
+  <div class="mx-auto max-w-10xl px-2 sm:px-4 py-8">
     <!-- 搜索和筛选区域 -->
     <div class="mb-8 space-y-4">
       <!-- 搜索框 -->
@@ -17,7 +17,8 @@
         <!-- 设备类型 -->
         <USelectMenu
           v-model="filters.deviceType"
-          :options="deviceTypeOptions"
+          :items="deviceTypeOptions"
+          value-key="value"
           placeholder="设备类型"
           class="w-40"
         />
@@ -32,7 +33,8 @@
         <!-- 标签 -->
         <USelectMenu
           v-model="selectedTags"
-          :options="tagOptions"
+          :items="tagOptions"
+          value-key="value"
           placeholder="标签"
           multiple
           class="w-48"
@@ -54,14 +56,95 @@
     <WallpaperGrid
       :wallpapers="wallpapers"
       :loading="loading"
-      :loading-more="loadingMore"
-      :has-more="hasMore"
       :tags-map="tagsMap"
-      @load-more="loadMore"
       @card-click="handleCardClick"
       @download="handleDownload"
       @view="handleView"
     />
+
+    <!-- 分页 -->
+    <div
+      v-if="totalPages > 1"
+      class="mt-10 flex justify-center"
+    >
+      <div
+        class="inline-flex items-center gap-2 rounded-full bg-white/85 dark:bg-slate-950/90 px-4 sm:px-5 py-2 shadow-[0_18px_55px_rgba(15,23,42,0.22)] text-[11px] text-slate-800 dark:text-slate-200 border border-slate-200/80 dark:border-slate-800/80 backdrop-blur-xl"
+      >
+        <UButton
+          icon="i-lucide-arrow-left"
+          size="xs"
+          color="neutral"
+          variant="ghost"
+          class="rounded-full h-8 w-8 border border-slate-200/80 dark:border-slate-800/80"
+          :disabled="currentPage <= 1 || loading"
+          @click="goPrevPage"
+        />
+
+        <div class="flex items-center gap-1">
+          <template
+            v-for="(item, index) in paginationItems"
+            :key="index"
+          >
+            <UButton
+              v-if="typeof item === 'number'"
+              :label="String(item)"
+              size="xs"
+              :color="item === currentPage ? 'primary' : 'neutral'"
+              :variant="item === currentPage ? 'solid' : 'ghost'"
+              class="rounded-full min-w-8 h-8 justify-center px-0.5 text-[11px]"
+              :disabled="loading"
+              @click="changePage(item)"
+            />
+            <span
+              v-else
+              class="px-1 text-slate-400 dark:text-slate-500"
+            >
+              ...
+            </span>
+          </template>
+        </div>
+
+        <div class="hidden sm:flex items-center gap-1 ml-2">
+          <UInput
+            v-model="inputPage"
+            size="xs"
+            class="w-16 h-8 text-center text-[11px] rounded-full bg-slate-100/80 dark:bg-slate-900/70 border-slate-200/80 dark:border-slate-800/80"
+            :disabled="loading"
+            placeholder="跳转"
+            @keyup.enter="handleJump"
+          />
+          <UButton
+            size="xs"
+            color="neutral"
+            variant="soft"
+            class="rounded-full h-8 px-3 text-[11px]"
+            :disabled="loading"
+            @click="handleJump"
+          >
+            Go
+          </UButton>
+        </div>
+
+        <div
+          class="ml-1 pl-3 border-l border-slate-200/80 dark:border-slate-700/70 text-slate-500 dark:text-slate-300/90 hidden sm:flex items-center gap-1"
+        >
+          <span>第</span>
+          <span class="font-semibold text-[11px]">{{ currentPage }}</span>
+          <span>/</span>
+          <span class="text-[11px]">{{ totalPages }}</span>
+        </div>
+
+        <UButton
+          icon="i-lucide-arrow-right"
+          size="xs"
+          color="neutral"
+          variant="ghost"
+          class="rounded-full h-8 w-8 border border-slate-200/80 dark:border-slate-800/80"
+          :disabled="currentPage >= totalPages || loading"
+          @click="goNextPage"
+        />
+      </div>
+    </div>
 
     <!-- 错误提示 -->
     <UAlert
@@ -86,7 +169,7 @@ const {
   error
 } = useWallpaper()
 
-const pageSize = 20
+const pageSize = 12
 
 // 在 setup 中取 baseURL，传入 useAsyncData fetcher，避免 fetcher 内调用 useRuntimeConfig() 报错
 // 服务端必须用绝对 URL，否则 Node/axios 会报 Invalid URL；仅客户端在 dev 下可用相对路径走代理
@@ -102,9 +185,18 @@ const { data: initialWallpapers, pending: initialPending } = useAsyncData(
   () => getWallpapers({ pageNum: 1, pageSize }, ssrBaseURL)
 )
 
-const { data: tagsData } = useAsyncData(
+const { data: tagsData, pending: tagsPending, error: tagsError } = useAsyncData(
   'index-tags',
   () => getTags(ssrBaseURL)
+)
+
+// 调试：检查标签数据加载状态
+watch(
+  [tagsData, tagsPending, tagsError],
+  ([data, pending, err]) => {
+    console.log('标签数据状态:', { data, pending, error: err })
+  },
+  { immediate: true }
 )
 
 useAsyncData('index-dictionaries', async () => {
@@ -113,15 +205,14 @@ useAsyncData('index-dictionaries', async () => {
   return null
 })
 
-// 状态：首屏数据同步到 ref，便于客户端筛选/加载更多
+// 状态：首屏数据同步到 ref，便于客户端筛选/分页
 const wallpapers = ref<PictureResponseInfo[]>([])
 const tags = ref<any[]>([])
 const tagsMap = ref<Record<number, string[]>>({})
 const searchQuery = ref('')
 const selectedTags = ref<string[]>([])
-const loadingMore = ref(false)
-const hasMore = ref(false)
 const currentPage = ref(1)
+const total = ref(0)
 
 // 筛选器
 const filters = ref({
@@ -135,8 +226,8 @@ watch(
   (v) => {
     if (v?.records) {
       wallpapers.value = v.records
-      hasMore.value = v.records.length === pageSize
-      currentPage.value = 1
+      total.value = v.total ?? v.records.length
+      currentPage.value = v.page_num ?? 1
     }
   },
   { immediate: true }
@@ -148,6 +239,7 @@ watch(
     if (Array.isArray(v)) {
       tags.value = v
     } else if (v && typeof v === 'object') {
+      // 处理可能的包装对象：{ data: [...] } 或 { tags: [...] }
       tags.value = (v as any).data ?? (v as any).tags ?? []
     } else {
       tags.value = []
@@ -172,6 +264,7 @@ const tagOptions = computed(() => {
   if (!tags.value || tags.value.length === 0) return []
 
   return tags.value.map((tag: any) => {
+    // TagResponse 对象有 name 字段，字符串直接使用
     const name
       = typeof tag === 'string' ? tag : tag.name || tag.label || String(tag)
     return { label: name, value: name }
@@ -187,14 +280,17 @@ const hasActiveFilters = computed(() => {
   )
 })
 
-// 客户端：加载壁纸（筛选、加载更多）
-const loadWallpapers = async (page = 1, append = false) => {
+const totalPages = computed(() => {
+  if (!total.value) return 1
+  return Math.max(1, Math.ceil(total.value / pageSize))
+})
+
+const inputPage = ref('')
+
+// 客户端：加载壁纸（筛选、分页）
+const loadWallpapers = async (page = 1) => {
   try {
-    if (page === 1) {
-      wallpaperLoading.value = true
-    } else {
-      loadingMore.value = true
-    }
+    wallpaperLoading.value = true
 
     const response = await getWallpapers({
       pageNum: page,
@@ -207,31 +303,81 @@ const loadWallpapers = async (page = 1, append = false) => {
 
     if (response) {
       const newWallpapers = response.records || []
-      if (append) {
-        wallpapers.value = [...wallpapers.value, ...newWallpapers]
-      } else {
-        wallpapers.value = newWallpapers
-      }
-      hasMore.value = newWallpapers.length === pageSize
+      wallpapers.value = newWallpapers
+      total.value = response.total ?? newWallpapers.length
       currentPage.value = page
     }
   } catch (err) {
     console.error('加载壁纸失败:', err)
   } finally {
     wallpaperLoading.value = false
-    loadingMore.value = false
   }
 }
 
-const loadMore = () => {
-  if (!loadingMore.value && hasMore.value) {
-    loadWallpapers(currentPage.value + 1, true)
+const changePage = (page: number) => {
+  if (page === currentPage.value || page < 1 || page > totalPages.value) return
+  loadWallpapers(page)
+}
+
+const goPrevPage = () => {
+  if (currentPage.value > 1) {
+    changePage(currentPage.value - 1)
   }
+}
+
+const goNextPage = () => {
+  if (currentPage.value < totalPages.value) {
+    changePage(currentPage.value + 1)
+  }
+}
+
+const paginationItems = computed<(number | 'ellipsis')[]>(() => {
+  const items: (number | 'ellipsis')[] = []
+  const totalPageCount = totalPages.value
+  const current = currentPage.value
+
+  if (totalPageCount <= 7) {
+    for (let i = 1; i <= totalPageCount; i += 1) {
+      items.push(i)
+    }
+    return items
+  }
+
+  items.push(1)
+
+  const start = Math.max(2, current - 2)
+  const end = Math.min(totalPageCount - 1, current + 2)
+
+  if (start > 2) {
+    items.push('ellipsis')
+  }
+
+  for (let i = start; i <= end; i += 1) {
+    items.push(i)
+  }
+
+  if (end < totalPageCount - 1) {
+    items.push('ellipsis')
+  }
+
+  items.push(totalPageCount)
+
+  return items
+})
+
+const handleJump = () => {
+  const raw = inputPage.value.trim()
+  if (!raw) return
+  const parsed = Number.parseInt(raw, 10)
+  if (Number.isNaN(parsed)) return
+  const target = Math.min(totalPages.value, Math.max(1, parsed))
+  inputPage.value = String(target)
+  changePage(target)
 }
 
 const handleSearch = () => {
   currentPage.value = 1
-  loadWallpapers(1, false)
+  loadWallpapers(1)
 }
 
 const clearFilters = () => {
@@ -243,14 +389,14 @@ const clearFilters = () => {
   selectedTags.value = []
   searchQuery.value = ''
   currentPage.value = 1
-  loadWallpapers(1, false)
+  loadWallpapers(1)
 }
 
 watch(
   [() => filters.value.deviceType, () => filters.value.category, selectedTags],
   () => {
     currentPage.value = 1
-    loadWallpapers(1, false)
+    loadWallpapers(1)
   },
   { deep: true }
 )

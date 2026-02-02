@@ -1,9 +1,9 @@
 <template>
   <div
-    class="group relative overflow-hidden rounded-lg bg-gray-100 dark:bg-gray-800 cursor-pointer transition-all duration-300 hover:shadow-xl hover:scale-[1.02] w-full min-w-0 max-w-full"
+    class="wallpaper-card group relative overflow-hidden rounded-[1.4rem] bg-white/80 dark:bg-slate-950/90 w-full min-w-0 max-w-full border border-slate-200/70 dark:border-slate-800/80 shadow-[0_18px_50px_rgba(15,23,42,0.14)]"
     @click="handleClick"
   >
-    <!-- 图片容器：固定比例，图片填满并裁剪 -->
+    <!-- 图片容器：固定比例，大图展示 -->
     <div class="wallpaper-image-container">
       <NuxtImg
         v-if="wallpaper.thumbnail_url"
@@ -21,107 +21,84 @@
         />
       </div>
 
-      <!-- 悬停遮罩 -->
-      <div
-        class="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-all duration-300 flex items-center justify-center opacity-0 group-hover:opacity-100"
-      >
-        <div class="flex gap-2">
-          <!-- <UButton
-            icon="i-lucide-download"
-            color="neutral"
-            variant="solid"
-            size="sm"
-            @click.stop="handleDownload"
-          /> -->
-          <UButton
-            icon="i-lucide-eye"
-            color="neutral"
-            variant="solid"
-            size="sm"
-            @click.stop="handleView"
-          />
+      <div class="absolute inset-0 pointer-events-none">
+        <!-- 悬浮信息面板 -->
+        <div
+          class="wallpaper-hover-panel"
+          @click.stop
+        >
+          <div class="flex items-center gap-3">
+            <div class="flex-1 min-w-0">
+              <p class="wallpaper-hover-title">
+                {{ displayTitle }}
+              </p>
+
+              <!-- 统计信息 + 分类 -->
+              <div class="wallpaper-hover-meta">
+                <span
+                  class="wallpaper-hover-meta-item"
+                >
+                  <UIcon
+                    name="i-lucide-eye"
+                    class="w-3 h-3"
+                  />
+                  <span>{{ wallpaper.view_count || 0 }}</span>
+                </span>
+                <span
+                  class="wallpaper-hover-meta-item"
+                >
+                  <UIcon
+                    name="i-lucide-download"
+                    class="w-3 h-3"
+                  />
+                  <span>{{ wallpaper.download_count || 0 }}</span>
+                </span>
+                <span
+                  v-if="wallpaper.category"
+                  class="wallpaper-hover-meta-item"
+                >
+                  <UIcon
+                    name="i-lucide-folder"
+                    class="w-3 h-3"
+                  />
+                  <span>{{ categoryName }}</span>
+                </span>
+              </div>
+            </div>
+
+            <UButton
+              icon="i-lucide-eye"
+              color="neutral"
+              variant="ghost"
+              size="xs"
+              class="shrink-0 rounded-full h-8 w-8 flex items-center justify-center bg-slate-50 text-slate-900 hover:bg-slate-100 border border-slate-200/80 shadow-[0_8px_24px_rgba(15,23,42,0.45)] cursor-pointer"
+              @click.stop="handleView"
+            />
+          </div>
+
+          <!-- 标签（即使没有标签也保留高度以保证卡片对齐） -->
+          <div class="wallpaper-hover-tags">
+            <template v-if="wallpaper.tags && wallpaper.tags.length > 0">
+              <span
+                v-for="tag in wallpaper.tags.slice(0, 3)"
+                :key="tag"
+              >
+                {{ tag }}
+              </span>
+              <span v-if="wallpaper.tags.length > 3">
+                +{{ wallpaper.tags.length - 3 }}
+              </span>
+            </template>
+          </div>
         </div>
       </div>
 
       <!-- 分辨率标签 -->
       <div
         v-if="wallpaper.width && wallpaper.height"
-        class="absolute top-2 right-2 bg-black/60 text-white text-xs px-2 py-1 rounded backdrop-blur-sm"
+        class="absolute top-2.5 right-2.5 inline-flex items-center gap-1 rounded-full bg-slate-950/85 text-[11px] font-medium text-slate-50 px-2.5 py-1 shadow-[0_12px_30px_rgba(15,23,42,0.75)] backdrop-blur-md"
       >
         {{ wallpaper.width }} × {{ wallpaper.height }}
-      </div>
-    </div>
-
-    <!-- 信息区域 -->
-    <div class="p-3">
-      <div class="flex items-start justify-between gap-2">
-        <div class="flex-1 min-w-0">
-          <p
-            v-if="wallpaper.original_filename"
-            class="text-sm font-medium text-gray-900 dark:text-gray-100 truncate"
-          >
-            {{ wallpaper.original_filename }}
-          </p>
-          <p
-            v-else
-            class="text-sm text-gray-500 dark:text-gray-400"
-          >
-            未命名壁纸
-          </p>
-        </div>
-      </div>
-      <!-- 标签 -->
-      <div
-        v-if="wallpaper.tags && wallpaper.tags.length > 0"
-        class="mt-2 flex flex-wrap gap-1"
-      >
-        <UBadge
-          v-for="tag in wallpaper.tags.slice(0, 3)"
-          :key="tag"
-          color="primary"
-          variant="subtle"
-          size="xs"
-        >
-          {{ tag }}
-        </UBadge>
-        <UBadge
-          v-if="wallpaper.tags.length > 3"
-          color="neutral"
-          variant="subtle"
-          size="xs"
-        >
-          +{{ wallpaper.tags.length - 3 }}
-        </UBadge>
-      </div>
-
-      <!-- 统计信息 -->
-      <div
-        class="mt-2 flex items-center gap-3 text-xs text-gray-500 dark:text-gray-400"
-      >
-        <div class="flex items-center gap-1">
-          <UIcon
-            name="i-lucide-eye"
-            class="w-3 h-3"
-          />
-          <span>{{ wallpaper.view_count || 0 }}</span>
-        </div>
-        <div class="flex items-center gap-1">
-          <UIcon
-            name="i-lucide-download"
-            class="w-3 h-3"
-          />
-          <span>{{ wallpaper.download_count || 0 }}</span>
-        </div>
-        <div
-          v-if="wallpaper.category"
-          class="flex items-center gap-1"
-        >
-          <UIcon
-            name="i-lucide-folder"
-            class="w-3 h-3"
-          />
-          <span>{{ categoryName }}</span>
-        </div>
       </div>
     </div>
   </div>
@@ -155,6 +132,25 @@ const categoryName = computed(() => {
   return getDictionaryName(props.wallpaper.category)
 })
 
+// 标题展示文案：避免过长文件名破坏布局
+const displayTitle = computed(() => {
+  const name = props.wallpaper.original_filename || '未命名壁纸'
+
+  if (name.length <= 28) {
+    return name
+  }
+
+  const dotIndex = name.lastIndexOf('.')
+  if (dotIndex > 0) {
+    const ext = name.slice(dotIndex)
+    const base = name.slice(0, dotIndex)
+    const trimmedBase = base.length > 20 ? `${base.slice(0, 18)}…` : base
+    return `${trimmedBase}${ext}`
+  }
+
+  return `${name.slice(0, 24)}…`
+})
+
 const handleClick = () => {
   emit('click', props.wallpaper)
 }
@@ -173,4 +169,3 @@ const handleView = async () => {
   emit('view', props.wallpaper)
 }
 </script>
-

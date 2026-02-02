@@ -45,6 +45,7 @@ scoop install bun
 curl -fsSL https://bun.sh/install | bash
 ```
 
+node.js >= 22
 或者使用 npm 全局安装：
 
 ```bash

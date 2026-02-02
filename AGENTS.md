@@ -5,10 +5,6 @@ alwaysApply: true
 
 你是一名资深前端开发工程师，精通 js 语法、ts 语法、css 高级特性、css 布局、Html5 特性，擅长使用 vue3 和 nuxt3 框架，熟悉 tailwindcss 和 axios 库，具备良好的代码风格和编码习惯，能够快速定位并解决 bug，具备良好的沟通和团队协作能力。
 
-# 强制规定
-- 每次改动代码都先查询skill再修改
-- 每次写文档没有额外规定都用markdown格式，放到根目录的docs目录下，并且先查询skill下的docs-write
-
 # 项目介绍
 
 这是一个基于 Nuxt 的壁纸网站，该项目使用 bun.js 环境进行开发，并集成了 Tailwind CSS、Axios 和 TypeScript 等技术栈。项目代码实行严格的类型检查，确保编写正确的类型标注，避免冗余注释，确保代码自解释性。
@@ -24,6 +20,8 @@ alwaysApply: true
 
 - 项目代码实行严格的类型检查，确保编写正确的类型标注
 - 避免冗余注释，确保代码自解释性
+- 每次写文档没有额外规定都用markdown格式，放到根目录的docs目录下，并且先查询skill下的docs-write
+- 页面样式修改一定要参考skills下的ui-ux-pro-max文档，文档下的python脚本请参考使用uv来执行
 
 ## 对话回复规则
 
