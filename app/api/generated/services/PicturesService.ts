@@ -137,42 +137,19 @@ tags?: (Array<string> | null),
     }
 
     /**
-     * 下载图片
-     * 根据图片ID下载图片，返回图片流。
-     * @returns any Successful Response
+     * 查询单个图片详情
+     * 根据图片ID查询单个图片的所有信息。
+     * @returns PictureUploadResponse Successful Response
      * @throws ApiError
      */
-    public static downloadPictureApiPicturesPictureIdDownloadGet({
+    public static getPictureApiPicturesPictureIdGet({
 pictureId,
 }: {
 pictureId: number,
-}): CancelablePromise<any> {
+}): CancelablePromise<PictureUploadResponse> {
         return __request(OpenAPI, {
             method: 'GET',
-            url: '/api/pictures/{picture_id}/download',
-            path: {
-                'picture_id': pictureId,
-            },
-            errors: {
-                422: `Validation Error`,
-            },
-        });
-    }
-
-    /**
-     * 增加图片预览次数
-     * 增加图片的预览次数。
-     * @returns any Successful Response
-     * @throws ApiError
-     */
-    public static incrementPictureViewApiPicturesPictureIdViewPost({
-pictureId,
-}: {
-pictureId: number,
-}): CancelablePromise<any> {
-        return __request(OpenAPI, {
-            method: 'POST',
-            url: '/api/pictures/{picture_id}/view',
+            url: '/api/pictures/{picture_id}',
             path: {
                 'picture_id': pictureId,
             },
@@ -223,6 +200,52 @@ pictureId: number,
         return __request(OpenAPI, {
             method: 'DELETE',
             url: '/api/pictures/{picture_id}',
+            path: {
+                'picture_id': pictureId,
+            },
+            errors: {
+                422: `Validation Error`,
+            },
+        });
+    }
+
+    /**
+     * 下载图片
+     * 根据图片ID下载图片，返回图片流。
+     * @returns any Successful Response
+     * @throws ApiError
+     */
+    public static downloadPictureApiPicturesPictureIdDownloadGet({
+pictureId,
+}: {
+pictureId: number,
+}): CancelablePromise<any> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/pictures/{picture_id}/download',
+            path: {
+                'picture_id': pictureId,
+            },
+            errors: {
+                422: `Validation Error`,
+            },
+        });
+    }
+
+    /**
+     * 增加图片预览次数
+     * 增加图片的预览次数。
+     * @returns any Successful Response
+     * @throws ApiError
+     */
+    public static incrementPictureViewApiPicturesPictureIdViewPost({
+pictureId,
+}: {
+pictureId: number,
+}): CancelablePromise<any> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/api/pictures/{picture_id}/view',
             path: {
                 'picture_id': pictureId,
             },

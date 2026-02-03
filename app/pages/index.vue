@@ -24,8 +24,10 @@
         />
 
         <!-- 分类 -->
-        <UInput
+        <USelectMenu
           v-model="filters.category"
+          :items="categoryOptions"
+          value-key="value"
           placeholder="分类"
           class="w-40"
         />
@@ -190,6 +192,13 @@ const { data: tagsData } = useAsyncData<TagResponse[]>(
   () => getTags(ssrBaseURL)
 )
 
+// 获取字典数据（包括分类 type=0）
+const { getDictionariesByType } = useDictionary()
+const { data: categoryDictData } = useAsyncData(
+  'index-categories',
+  () => getDictionariesByType(0, ssrBaseURL)
+)
+
 useAsyncData('index-dictionaries', async () => {
   const { getDictionaries } = useDictionary()
   await getDictionaries(ssrBaseURL)
@@ -208,7 +217,7 @@ const total = ref(0)
 // 筛选器
 const filters = ref({
   deviceType: null as number | null,
-  category: '',
+  category: null as string | null,
   tags: null as string[] | null
 })
 
@@ -251,11 +260,32 @@ const tagOptions = computed(() =>
   }))
 )
 
+// 分类选项：来自字典接口，type=0
+const categoryOptions = computed(() => {
+  const options = [
+    { label: '全部', value: null as string | null }
+  ]
+  if (categoryDictData.value && Array.isArray(categoryDictData.value)) {
+    const categoryItems = categoryDictData.value.map(
+      (item: {
+        name_cn?: string
+        name?: string
+        code?: string
+      }) => ({
+        label: item.name_cn || item.name || item.code || '',
+        value: (item.code || item.name) as string
+      })
+    )
+    options.push(...categoryItems)
+  }
+  return options
+})
+
 // 是否有激活的筛选
 const hasActiveFilters = computed(() => {
   return (
     filters.value.deviceType !== null
-    || filters.value.category !== ''
+    || filters.value.category !== null
     || (selectedTags.value && selectedTags.value.length > 0)
   )
 })
@@ -363,7 +393,7 @@ const handleSearch = () => {
 const clearFilters = () => {
   filters.value = {
     deviceType: null,
-    category: '',
+    category: null,
     tags: null
   }
   selectedTags.value = []

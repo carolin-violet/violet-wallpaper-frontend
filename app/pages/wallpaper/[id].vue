@@ -175,11 +175,11 @@
 </template>
 
 <script setup lang="ts">
-import type { PictureResponseInfo } from '~/api/generated/services/PicturesService'
+import type { PictureUploadResponse } from '~/api/generated'
 
 const route = useRoute()
 const router = useRouter()
-const { getWallpapers, downloadPicture, incrementView } = useWallpaper()
+const { getWallpaperById, downloadPicture, incrementView } = useWallpaper()
 
 const id = computed(() => Number(route.params.id))
 
@@ -189,39 +189,36 @@ const ssrBaseURL = import.meta.server
   ? defaultApiBase
   : (import.meta.dev ? '' : defaultApiBase)
 
-// SSR：服务端根据 id 拉取壁纸列表并取当前 id 对应项（无单独详情接口）
+// SSR：使用详情接口获取单个壁纸
 const {
-  data: wallpaperData,
+  data: wallpaper,
   pending: loading,
   error: fetchError
 } = useAsyncData(
   () => `wallpaper-${route.params.id}`,
   async () => {
     const pid = id.value
-    if (!pid) return { wallpaper: null as PictureResponseInfo | null, error: '无效的壁纸ID' }
-
-    const response = await getWallpapers(
-      { pageNum: 1, pageSize: 100 },
-      ssrBaseURL
-    )
-
-    if (!response?.records) {
-      return { wallpaper: null, error: null }
+    if (!pid || isNaN(pid)) {
+      throw new Error('无效的壁纸ID')
     }
 
-    const found = response.records.find(
-      (w: PictureResponseInfo) => w.id === pid
-    )
-    if (!found) {
-      return { wallpaper: null, error: '壁纸不存在' }
+    try {
+      const response = await getWallpaperById(pid, ssrBaseURL)
+      return response
+    } catch (err: any) {
+      console.error('获取壁纸详情失败:', err)
+      throw err
     }
-    return { wallpaper: found, error: null }
   },
   { watch: [id] }
 )
 
-const wallpaper = computed(() => wallpaperData.value?.wallpaper ?? null)
-const error = computed(() => fetchError.value?.message ?? wallpaperData.value?.error ?? null)
+const error = computed(() => {
+  if (fetchError.value) {
+    return fetchError.value.message || '获取壁纸详情失败'
+  }
+  return null
+})
 
 // 仅客户端：增加预览次数（不在 SSR 中调用，避免每次请求都 +1）
 onMounted(() => {
