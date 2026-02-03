@@ -158,7 +158,7 @@
 </template>
 
 <script setup lang="ts">
-import type { PictureResponseInfo } from '~/api/generated/services/PicturesService'
+import type { PictureResponseInfo, TagResponse } from '~/api/generated'
 
 const {
   getWallpapers,
@@ -185,18 +185,9 @@ const { data: initialWallpapers, pending: initialPending } = useAsyncData(
   () => getWallpapers({ pageNum: 1, pageSize }, ssrBaseURL)
 )
 
-const { data: tagsData, pending: tagsPending, error: tagsError } = useAsyncData(
+const { data: tagsData } = useAsyncData<TagResponse[]>(
   'index-tags',
   () => getTags(ssrBaseURL)
-)
-
-// 调试：检查标签数据加载状态
-watch(
-  [tagsData, tagsPending, tagsError],
-  ([data, pending, err]) => {
-    console.log('标签数据状态:', { data, pending, error: err })
-  },
-  { immediate: true }
 )
 
 useAsyncData('index-dictionaries', async () => {
@@ -207,7 +198,7 @@ useAsyncData('index-dictionaries', async () => {
 
 // 状态：首屏数据同步到 ref，便于客户端筛选/分页
 const wallpapers = ref<PictureResponseInfo[]>([])
-const tags = ref<any[]>([])
+const tags = ref<TagResponse[]>([])
 const tagsMap = ref<Record<number, string[]>>({})
 const searchQuery = ref('')
 const selectedTags = ref<string[]>([])
@@ -236,14 +227,7 @@ watch(
 watch(
   tagsData,
   (v) => {
-    if (Array.isArray(v)) {
-      tags.value = v
-    } else if (v && typeof v === 'object') {
-      // 处理可能的包装对象：{ data: [...] } 或 { tags: [...] }
-      tags.value = (v as any).data ?? (v as any).tags ?? []
-    } else {
-      tags.value = []
-    }
+    tags.value = Array.isArray(v) ? v : []
   },
   { immediate: true }
 )
@@ -259,17 +243,13 @@ const deviceTypeOptions = [
   { label: '头像', value: 3 }
 ]
 
-// 标签选项
-const tagOptions = computed(() => {
-  if (!tags.value || tags.value.length === 0) return []
-
-  return tags.value.map((tag: any) => {
-    // TagResponse 对象有 name 字段，字符串直接使用
-    const name
-      = typeof tag === 'string' ? tag : tag.name || tag.label || String(tag)
-    return { label: name, value: name }
-  })
-})
+// 标签选项：来自 TagsService.listTagsApiTagsListGet，按点击次数倒序
+const tagOptions = computed(() =>
+  tags.value.map((tag: TagResponse) => ({
+    label: tag.name,
+    value: tag.name
+  }))
+)
 
 // 是否有激活的筛选
 const hasActiveFilters = computed(() => {

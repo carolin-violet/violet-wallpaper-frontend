@@ -1,5 +1,6 @@
 {
   "$schema": "http://json.schemastore.org/openapi-3.0",
+  "openapi": "3.0.0",
   "info": {
     "title": "Violet Wallpaper API",
     "version": "1.0.0",

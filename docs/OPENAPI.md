@@ -20,7 +20,7 @@
 2. 运行生成命令：
 
 ```bash
-bun run generate:api
+pnpm run generate:api
 ```
 
 ### 方式二：从远程 Swagger URL 生成
@@ -28,13 +28,13 @@ bun run generate:api
 如果后端提供了 Swagger 文档访问地址（如 `http://127.0.0.1:8203/openapi.json`），可直接从 URL 生成：
 
 ```bash
-bun run generate:api:url
+pnpm run generate:api:url
 ```
 
 或者指定自定义 URL：
 
 ```bash
-bun run scripts/generate-api.ts --input=http://127.0.0.1:8203/openapi.json
+node scripts/generate-api.mjs --input=http://127.0.0.1:8203/openapi.json
 ```
 
 ## 使用生成的 API 客户端
@@ -133,7 +133,7 @@ app/api/
   └── example.ts         # 使用示例
 
 scripts/
-  └── generate-api.ts    # API 生成脚本
+  └── generate-api.mjs   # API 生成脚本
 
 openapi.config.json      # OpenAPI 配置文件模板
 ```
@@ -142,12 +142,12 @@ openapi.config.json      # OpenAPI 配置文件模板
 
 ### 1. 生成失败：找不到 OpenAPI 文档
 
-**问题**：运行 `bun run generate:api` 时提示找不到文件。
+**问题**：运行 `pnpm run generate:api` 时提示找不到文件。
 
 **解决**：
 
 - 确保 `openapi.config.json` 文件存在于项目根目录
-- 或者使用 `bun run generate:api:url` 从远程 URL 生成
+- 或者使用 `pnpm run generate:api:url` 从远程 URL 生成
 - 检查文件路径是否正确
 
 ### 2. API 客户端未初始化错误
@@ -156,7 +156,7 @@ openapi.config.json      # OpenAPI 配置文件模板
 
 **解决**：
 
-- 确保已运行 `bun run generate:api` 生成 API 客户端代码
+- 确保已运行 `pnpm run generate:api` 生成 API 客户端代码
 - 检查 `app/api/generated/` 目录是否存在且包含生成的文件
 - 使用 `await getApiClient()` 而不是同步调用
 
@@ -175,13 +175,13 @@ openapi.config.json      # OpenAPI 配置文件模板
 当后端 API 发生变化时，只需重新运行生成命令：
 
 ```bash
-bun run generate:api
+pnpm run generate:api
 ```
 
 或
 
 ```bash
-bun run generate:api:url
+pnpm run generate:api:url
 ```
 
 生成工具会自动覆盖旧的代码。

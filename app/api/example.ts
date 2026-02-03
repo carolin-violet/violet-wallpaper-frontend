@@ -2,7 +2,7 @@
  * API 使用示例
  * 此文件仅作为参考，实际使用时请根据生成的 API 客户端调整
  *
- * 使用前请确保已运行 `bun run generate:api` 生成 API 客户端代码
+ * 使用前请确保已运行 `pnpm run generate:api` 生成 API 客户端代码
  */
 
 import { getApiClient } from './client'

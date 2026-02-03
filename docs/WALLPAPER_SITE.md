@@ -55,7 +55,7 @@ app/
 ### 1. 启动开发服务器
 
 ```bash
-bun run dev
+pnpm dev
 ```
 
 访问 `http://localhost:3000` 查看网站。

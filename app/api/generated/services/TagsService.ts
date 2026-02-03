@@ -2,41 +2,12 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
+import type { TagCreateRequest } from '../models/TagCreateRequest';
+import type { TagResponse } from '../models/TagResponse';
 
 import type { CancelablePromise } from '../core/CancelablePromise';
 import { OpenAPI } from '../core/OpenAPI';
 import { request as __request } from '../core/request';
-
-// 内联类型定义
-export type TagCreateRequest = {
-    /**
-     * 标签名称
-     */
-    name: string;
-};
-export type TagResponse = {
-    /**
-     * 主键
-     */
-    id: number;
-    /**
-     * 标签名称
-     */
-    name: string;
-    /**
-     * 点击次数
-     */
-    click_count: number;
-    /**
-     * 创建时间
-     */
-    created_at: string;
-    /**
-     * 更新时间
-     */
-    updated_at: string;
-};
-
 
 export class TagsService {
 

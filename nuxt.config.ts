@@ -2,9 +2,8 @@
 export default defineNuxtConfig({
   modules: ['@nuxt/eslint', '@nuxt/ui', '@nuxt/image'],
 
-  // SSR 已启用；reka-ui 水合问题通过 app.vue 中 ConfigProvider 注入 useId 解决
-  // 见 https://reka-ui.com/docs/utilities/config-provider#hydration-issue-vue-3-5
-  ssr: true,
+  // 暂时禁用 SSR 以避免 reka-ui ConfigProvider 错误
+  ssr: false,
 
   devtools: {
     enabled: true

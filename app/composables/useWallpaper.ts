@@ -2,6 +2,7 @@
  * 壁纸相关的 composable
  */
 
+import type { TagResponse } from '~/api/generated'
 import { getApiClient } from '~/api/client'
 
 export const useWallpaper = () => {
@@ -60,23 +61,22 @@ export const useWallpaper = () => {
   }
 
   /**
-   * 获取标签列表
+   * 获取标签列表（调用 TagsService.listTagsApiTagsListGet）
    * @param baseURL 可选，SSR/useAsyncData 等无 Nuxt 上下文时由调用方传入
    */
-  const getTags = async (baseURL?: string) => {
+  const getTags = async (baseURL?: string): Promise<TagResponse[]> => {
     try {
       const api = await getApiClient(baseURL)
       const response = await api.TagsService.listTagsApiTagsListGet()
 
-      // 处理响应数据，可能是数组或对象
       if (Array.isArray(response)) {
-        return response
+        return response as TagResponse[]
       }
       if (response && typeof response === 'object' && 'data' in response) {
-        return (response as any).data
+        return (response as { data: TagResponse[] }).data
       }
       return []
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('获取标签列表失败:', err)
       return []
     }

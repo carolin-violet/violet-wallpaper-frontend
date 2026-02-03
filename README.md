@@ -1,10 +1,10 @@
-## Violet Wallpaper Frontend（基于 Bun 的 Nuxt 项目）
+## Violet Wallpaper Frontend（基于 pnpm 的 Nuxt 项目）
 
-本项目是使用 **Nuxt 4 + Nuxt UI** 构建的前端应用，已适配 **Bun** 运行环境。
+本项目是使用 **Nuxt 4 + Nuxt UI** 构建的前端应用，使用 **pnpm + Node.js** 作为默认开发环境。
 
 - **框架**: Nuxt 4
 - **UI**: Nuxt UI
-- **运行环境**: Bun
+- **包管理器**: pnpm
 
 ### 核心依赖版本
 
@@ -19,55 +19,15 @@
 
 ## 前置条件
 
-- 已安装 **Bun**（推荐使用最新版）
-
-### 安装 Bun
-
-#### Windows
-
-使用 PowerShell 执行以下命令：
-
-```powershell
-powershell -c "irm bun.sh/install.ps1 | iex"
-```
-
-或者使用 Scoop 安装：
-
-```powershell
-scoop install bun
-```
-
-#### macOS / Linux
-
-使用 curl 安装：
-
-```bash
-curl -fsSL https://bun.sh/install | bash
-```
-
-node.js >= 22
-或者使用 npm 全局安装：
-
-```bash
-npm install -g bun
-```
-
-#### 验证安装
-
-安装完成后，在终端执行以下命令验证是否安装成功：
-
-```bash
-bun --version
-```
-
-更多安装方式可参考 Bun 官方文档：`https://bun.sh`
+- Node.js >= 22
+- pnpm >= 10（项目声明为 `pnpm@10.23.0`）
 
 ## 安装依赖
 
 在项目根目录执行：
 
 ```bash
-bun install
+pnpm install
 ```
 
 这会根据 `package.json` 安装项目依赖并执行 `postinstall`（`nuxt prepare`）。
@@ -83,7 +43,13 @@ bun install
 启动本地开发环境（默认 `http://localhost:3000`）：
 
 ```bash
-bun run dev
+pnpm dev
+```
+
+## 生成api接口
+
+```bash
+pnpm run generate:api:url
 ```
 
 ## 构建生产环境
@@ -91,7 +57,7 @@ bun run dev
 构建生产包：
 
 ```bash
-bun run build
+pnpm build
 ```
 
 ## 预览生产构建
@@ -99,7 +65,7 @@ bun run build
 本地预览构建结果：
 
 ```bash
-bun run preview
+pnpm preview
 ```
 
 ## 部署

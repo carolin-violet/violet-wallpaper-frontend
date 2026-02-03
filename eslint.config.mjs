@@ -14,7 +14,6 @@ export default withNuxt({
     '*.bundle.js',
     'app/api/generated/',
     'pnpm-lock.yaml',
-    'bun.lock',
     'package-lock.json',
     'yarn.lock',
     '.DS_Store',

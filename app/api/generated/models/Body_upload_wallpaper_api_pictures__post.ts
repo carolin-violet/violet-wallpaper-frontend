@@ -11,7 +11,7 @@ export type Body_upload_wallpaper_api_pictures__post = {
     /**
      * 标签
      */
-    tags: Array<string>;
+    tags?: Array<string>;
     /**
      * 分类
      */

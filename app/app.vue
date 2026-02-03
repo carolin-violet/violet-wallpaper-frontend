@@ -1,6 +1,4 @@
 <script setup lang="ts">
-import { ConfigProvider } from 'reka-ui'
-
 useHead({
   meta: [{ name: 'viewport', content: 'width=device-width, initial-scale=1' }],
   link: [{ rel: 'icon', href: '/favicon.ico' }],
@@ -20,15 +18,10 @@ useSeoMeta({
   ogDescription: description,
   twitterCard: 'summary_large_image'
 })
-
-// Reka UI SSR 水合：注入 Nuxt 的 useId，避免服务端/客户端 id 不一致导致的水合错误
-// 见 https://reka-ui.com/docs/utilities/config-provider#hydration-issue-vue-3-5
-const useIdForReka = () => useId()
 </script>
 
 <template>
-  <ConfigProvider :use-id="useIdForReka">
-    <UApp>
+  <UApp>
     <UHeader>
       <template #left>
         <NuxtLink
@@ -72,6 +65,5 @@ const useIdForReka = () => useId()
         </p>
       </template>
     </UFooter>
-    </UApp>
-  </ConfigProvider>
+  </UApp>
 </template>

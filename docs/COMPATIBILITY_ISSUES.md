@@ -60,7 +60,7 @@ export default defineNuxtConfig({
 
 2. **升级版本**：定期检查是否有新版本发布，尝试升级到最新版本：
    ```bash
-   bun update @nuxt/ui
+   pnpm up @nuxt/ui
    ```
 
 3. **替代方案**：如果必须使用 SSR，可以考虑：

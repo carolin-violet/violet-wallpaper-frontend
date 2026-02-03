@@ -2,7 +2,7 @@
  * API 客户端封装
  * 基于 openapi-typescript-codegen 生成的客户端进行二次封装
  *
- * 注意：首次使用前需要先运行 `bun run generate:api` 生成 API 客户端代码
+ * 注意：首次使用前需要先运行 `pnpm run generate:api` 生成 API 客户端代码
  */
 
 let isInitialized = false
@@ -20,7 +20,24 @@ async function initApiClient(overrideBaseURL?: string) {
 
       if (!generatedModules || !generatedModules.OpenAPI) {
         throw new Error(
-          '未找到生成的 OpenAPI 客户端，请先运行 `bun run generate:api` 生成 API 代码'
+          '未找到生成的 OpenAPI 客户端，请先运行 `pnpm run generate:api` 生成 API 代码'
+        )
+      }
+
+      // 验证服务类是否存在
+      if (
+        !generatedModules.PicturesService
+        || !generatedModules.TagsService
+        || !generatedModules.DictionariesService
+      ) {
+        console.error('API 服务类缺失:', {
+          PicturesService: !!generatedModules.PicturesService,
+          TagsService: !!generatedModules.TagsService,
+          DictionariesService: !!generatedModules.DictionariesService,
+          availableKeys: Object.keys(generatedModules)
+        })
+        throw new Error(
+          'API 服务类未找到，请确保已运行 `pnpm run generate:api:url` 从后端生成完整的 API 代码'
         )
       }
 
@@ -45,7 +62,7 @@ async function initApiClient(overrideBaseURL?: string) {
       const err = error as { code?: string }
       if (err.code === 'ERR_MODULE_NOT_FOUND') {
         throw new Error(
-          'API 客户端未生成，请先运行 `bun run generate:api` 生成 API 代码'
+          'API 客户端未生成，请先运行 `pnpm run generate:api` 生成 API 代码'
         )
       }
       throw error
@@ -62,17 +79,28 @@ async function initApiClient(overrideBaseURL?: string) {
 export async function getApiClient(baseURL?: string) {
   const modules = await initApiClient(baseURL)
 
-  if (baseURL && modules?.OpenAPI) {
+  if (!modules) {
+    throw new Error('API 客户端初始化失败')
+  }
+
+  if (baseURL && modules.OpenAPI) {
     modules.OpenAPI.BASE = baseURL
+  }
+
+  // 确保服务类存在
+  if (!modules.PicturesService || !modules.TagsService || !modules.DictionariesService) {
+    throw new Error(
+      'API 服务类未找到，请确保已运行 `pnpm run generate:api` 生成完整的 API 代码'
+    )
   }
 
   // 返回服务类对象
   return {
-    OpenAPI: modules?.OpenAPI,
-    PicturesService: modules?.PicturesService,
-    TagsService: modules?.TagsService,
-    DictionariesService: modules?.DictionariesService,
-    DefaultService: modules?.DefaultService
+    OpenAPI: modules.OpenAPI,
+    PicturesService: modules.PicturesService,
+    TagsService: modules.TagsService,
+    DictionariesService: modules.DictionariesService,
+    DefaultService: modules.DefaultService
   }
 }
 
