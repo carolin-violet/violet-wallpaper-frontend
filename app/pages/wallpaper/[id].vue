@@ -42,8 +42,8 @@
             class="relative rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-800"
           >
             <NuxtImg
-              v-if="wallpaper.webp_url"
-              :src="wallpaper.webp_url"
+              v-if="wallpaper && (wallpaper.webp_url || wallpaper.thumbnail_url || wallpaper.url)"
+              :src="wallpaper.webp_url || wallpaper.thumbnail_url || wallpaper.url"
               :alt="wallpaper.original_filename || '壁纸'"
               class="w-full h-auto"
               loading="lazy"
@@ -58,7 +58,6 @@
               />
             </div>
           </div>
-
           <!-- 操作按钮 -->
           <div class="mt-4 flex gap-4">
             <UButton
@@ -175,8 +174,6 @@
 </template>
 
 <script setup lang="ts">
-import type { PictureUploadResponse } from '~/api/generated'
-
 const route = useRoute()
 const router = useRouter()
 const { getWallpaperById, downloadPicture, incrementView } = useWallpaper()

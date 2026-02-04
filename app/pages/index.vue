@@ -1,18 +1,7 @@
 <template>
   <div class="mx-auto max-w-10xl px-2 sm:px-4 py-8">
-    <!-- 搜索和筛选区域 -->
-    <div class="mb-8 space-y-4">
-      <!-- 搜索框 -->
-      <UInput
-        v-model="searchQuery"
-        placeholder="搜索壁纸..."
-        icon="i-lucide-search"
-        size="lg"
-        class="max-w-md"
-        @keyup.enter="handleSearch"
-      />
-
-      <!-- 筛选器 -->
+    <!-- 筛选区域 -->
+    <div class="mb-8">
       <div class="flex flex-wrap gap-4 items-center">
         <!-- 设备类型 -->
         <USelectMenu

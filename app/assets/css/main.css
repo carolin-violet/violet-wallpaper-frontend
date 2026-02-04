@@ -33,13 +33,13 @@
   border-color: rgba(148, 163, 184, 0.6);
 }
 
-/* 图片懒加载优化 */
-img[loading="lazy"] {
+/* 图片懒加载优化：仅作用于首页壁纸卡片 */
+.wallpaper-card img[loading="lazy"] {
   opacity: 0;
   transition: opacity 0.3s;
 }
 
-img[loading="lazy"].loaded {
+.wallpaper-card img[loading="lazy"].loaded {
   opacity: 1;
 }
 
