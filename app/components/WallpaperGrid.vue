@@ -68,8 +68,8 @@
     >
       <UCard
         v-if="previewWallpaper"
-        class="w-[95vw] h-[95vh] max-w-[95vw] max-h-[95vh] flex flex-col m-auto"
-        :ui="{ body: 'flex-1 overflow-hidden', header: 'flex-shrink-0' }"
+        class="w-[95vw] h-[95vh] max-w-[95vw] max-h-[95vh] flex flex-col m-auto min-h-0"
+        :ui="{ body: 'flex-1 min-h-0 overflow-hidden flex flex-col', header: 'flex-shrink-0' }"
         @click.stop
       >
         <template #header>
@@ -88,13 +88,13 @@
         </template>
 
         <div
-          class="flex-1 flex items-center justify-center bg-gray-100 dark:bg-gray-800 overflow-hidden"
+          class="flex-1 min-h-0 flex items-center justify-center bg-gray-100 dark:bg-gray-800 overflow-hidden w-full"
         >
           <NuxtImg
             v-if="previewWallpaper.webp_url"
             :src="previewWallpaper.webp_url"
             :alt="previewWallpaper.original_filename || '壁纸'"
-            class="max-w-full max-h-full w-auto h-auto object-contain"
+            class="w-full h-full object-contain"
           />
           <div
             v-else

@@ -407,20 +407,8 @@ const handleCardClick = (wallpaper: PictureResponseInfo) => {
 const handleDownload = async (wallpaper: PictureResponseInfo) => {
   try {
     const blob = await downloadPicture(wallpaper.id)
-    const url = window.URL.createObjectURL(blob)
-    const link = document.createElement('a')
-    link.href = url
     const filename = wallpaper.original_filename || `wallpaper-${wallpaper.id}`
-    let downloadFilename = filename
-    if (!filename.includes('.')) {
-      const extension = blob.type.split('/')[1] || 'jpg'
-      downloadFilename = `${filename}.${extension}`
-    }
-    link.download = downloadFilename
-    document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
-    window.URL.revokeObjectURL(url)
+    downloadBlobAsFile(blob, filename)
   } catch (err) {
     console.error('下载失败:', err)
   }

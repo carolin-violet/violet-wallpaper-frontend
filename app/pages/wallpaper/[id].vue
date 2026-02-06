@@ -107,7 +107,7 @@
                 </p>
               </div>
 
-              <div v-if="wallpaper.category">
+              <div v-if="categoryName">
                 <p class="text-sm text-gray-500 dark:text-gray-400 mb-1">
                   分类
                 </p>
@@ -115,7 +115,7 @@
                   color="primary"
                   variant="soft"
                 >
-                  {{ wallpaper.category }}
+                  {{ categoryName }}
                 </UBadge>
               </div>
 
@@ -177,6 +177,7 @@
 const route = useRoute()
 const router = useRouter()
 const { getWallpaperById, downloadPicture, incrementView } = useWallpaper()
+const { getDictionaryName, initDictionaries } = useDictionary()
 
 const id = computed(() => Number(route.params.id))
 
@@ -217,12 +218,16 @@ const error = computed(() => {
   return null
 })
 
-// 仅客户端：增加预览次数（不在 SSR 中调用，避免每次请求都 +1）
+// 仅客户端：增加预览次数（不在 SSR 中调用，避免每次请求都 +1）、初始化字典
 onMounted(() => {
+  initDictionaries()
   if (id.value && wallpaper.value) {
     incrementView(id.value)
   }
 })
+
+// 分类中文名（来自字典）
+const categoryName = computed(() => getDictionaryName(wallpaper.value?.category))
 
 // 获取设备类型名称
 const getDeviceTypeName = (type: number | null) => {
@@ -239,7 +244,9 @@ const tags = computed(() => wallpaper.value?.tags ?? [])
 const handleDownload = async () => {
   if (!wallpaper.value) return
   try {
-    await downloadPicture(wallpaper.value.id)
+    const blob = await downloadPicture(wallpaper.value.id)
+    const filename = wallpaper.value.original_filename || `wallpaper-${wallpaper.value.id}`
+    downloadBlobAsFile(blob, filename)
   } catch (err) {
     console.error('下载失败:', err)
   }
