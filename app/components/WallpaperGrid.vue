@@ -112,7 +112,7 @@
 </template>
 
 <script setup lang="ts">
-import type { PictureResponseInfo } from '~/api/generated/services/PicturesService'
+import type { PictureResponseInfo } from '~/api/generated'
 
 interface Props {
   wallpapers: PictureResponseInfo[]

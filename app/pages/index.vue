@@ -4,32 +4,53 @@
     <div class="mb-8">
       <div class="flex flex-wrap gap-4 items-center">
         <!-- 设备类型 -->
-        <USelectMenu
-          v-model="filters.deviceType"
-          :items="deviceTypeOptions"
-          value-key="value"
-          placeholder="设备类型"
-          class="w-40"
-        />
+        <div class="flex items-center gap-2">
+          <span class="text-sm text-slate-600 dark:text-slate-300">设备类型：</span>
+          <USelectMenu
+            v-model="filters.deviceType"
+            :items="deviceTypeOptions"
+            value-key="value"
+            placeholder="设备类型"
+            class="w-40"
+          />
+        </div>
+
+        <!-- 精选 -->
+        <div class="flex items-center gap-2">
+          <span class="text-sm text-slate-600 dark:text-slate-300">精选：</span>
+          <USelectMenu
+            v-model="filters.isFeatured"
+            :items="featuredOptions"
+            value-key="value"
+            placeholder="精选"
+            class="w-32"
+          />
+        </div>
 
         <!-- 分类 -->
-        <USelectMenu
-          v-model="filters.category"
-          :items="categoryOptions"
-          value-key="value"
-          placeholder="分类"
-          class="w-40"
-        />
+        <div class="flex items-center gap-2">
+          <span class="text-sm text-slate-600 dark:text-slate-300">分类：</span>
+          <USelectMenu
+            v-model="filters.category"
+            :items="categoryOptions"
+            value-key="value"
+            placeholder="分类"
+            class="w-40"
+          />
+        </div>
 
         <!-- 标签 -->
-        <USelectMenu
-          v-model="selectedTags"
-          :items="tagOptions"
-          value-key="value"
-          placeholder="标签"
-          multiple
-          class="w-48"
-        />
+        <div class="flex items-center gap-2">
+          <span class="text-sm text-slate-600 dark:text-slate-300">标签：</span>
+          <USelectMenu
+            v-model="selectedTags"
+            :items="tagOptions"
+            value-key="value"
+            placeholder="标签"
+            multiple
+            class="w-48"
+          />
+        </div>
 
         <!-- 清除筛选 -->
         <UButton
@@ -160,6 +181,9 @@ const {
   error
 } = useWallpaper()
 
+const route = useRoute()
+const router = useRouter()
+
 const pageSize = 12
 
 // 在 setup 中取 baseURL，传入 useAsyncData fetcher，避免 fetcher 内调用 useRuntimeConfig() 报错
@@ -173,7 +197,11 @@ const ssrBaseURL = import.meta.server
 // SSR：首屏壁纸、标签、字典在服务端请求
 const { data: initialWallpapers, pending: initialPending } = useAsyncData(
   'index-wallpapers',
-  () => getWallpapers({ pageNum: 1, pageSize }, ssrBaseURL)
+  () => {
+    const featuredRaw = route.query.featured
+    const featured = featuredRaw === '1' ? 1 : null
+    return getWallpapers({ pageNum: 1, pageSize, isFeatured: featured }, ssrBaseURL)
+  }
 )
 
 const { data: tagsData } = useAsyncData<TagResponse[]>(
@@ -206,9 +234,18 @@ const total = ref(0)
 // 筛选器
 const filters = ref({
   deviceType: null as number | null,
+  isFeatured: null as number | null,
   category: null as string | null,
   tags: null as string[] | null
 })
+
+watch(
+  () => route.query.featured,
+  (v) => {
+    filters.value.isFeatured = v === '1' ? 1 : null
+  },
+  { immediate: true }
+)
 
 watch(
   initialWallpapers,
@@ -239,6 +276,11 @@ const deviceTypeOptions = [
   { label: 'PC端', value: 1 },
   { label: '移动端', value: 2 },
   { label: '头像', value: 3 }
+]
+
+const featuredOptions = [
+  { label: '全部', value: null },
+  { label: '精选', value: 1 }
 ]
 
 // 标签选项：来自 TagsService.listTagsApiTagsListGet，按点击次数倒序
@@ -274,6 +316,7 @@ const categoryOptions = computed(() => {
 const hasActiveFilters = computed(() => {
   return (
     filters.value.deviceType !== null
+    || filters.value.isFeatured !== null
     || filters.value.category !== null
     || (selectedTags.value && selectedTags.value.length > 0)
   )
@@ -295,6 +338,7 @@ const loadWallpapers = async (page = 1) => {
       pageNum: page,
       pageSize: pageSize,
       deviceType: filters.value.deviceType,
+      isFeatured: filters.value.isFeatured,
       category: filters.value.category || null,
       tags: selectedTags.value.length > 0 ? selectedTags.value : null,
       originalFilename: searchQuery.value || null
@@ -382,19 +426,26 @@ const handleSearch = () => {
 const clearFilters = () => {
   filters.value = {
     deviceType: null,
+    isFeatured: null,
     category: null,
     tags: null
   }
   selectedTags.value = []
   searchQuery.value = ''
   currentPage.value = 1
+  router.replace({ query: {} })
   loadWallpapers(1)
 }
 
 watch(
-  [() => filters.value.deviceType, () => filters.value.category, selectedTags],
+  [() => filters.value.deviceType, () => filters.value.isFeatured, () => filters.value.category, selectedTags],
   () => {
     currentPage.value = 1
+    const query: Record<string, string> = {}
+    if (filters.value.isFeatured === 1) {
+      query.featured = '1'
+    }
+    router.replace({ query })
     loadWallpapers(1)
   },
   { deep: true }

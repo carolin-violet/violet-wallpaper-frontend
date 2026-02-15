@@ -14,10 +14,20 @@ export class DictionariesService {
      * @returns any Successful Response
      * @throws ApiError
      */
-    public static getAllDictionariesApiDictionariesGet(): CancelablePromise<any> {
+    public static getAllDictionariesApiDictionariesGet({
+type,
+}: {
+type?: (number | null),
+}): CancelablePromise<any> {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/api/dictionaries/',
+            query: {
+                'type': type,
+            },
+            errors: {
+                422: `Validation Error`,
+            },
         });
     }
 

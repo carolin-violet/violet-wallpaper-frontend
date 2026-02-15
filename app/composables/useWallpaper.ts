@@ -25,6 +25,7 @@ export const useWallpaper = () => {
       originalFilename?: string | null
       deviceType?: number | null
       status?: number | null
+      isFeatured?: number | null
       category?: string | null
       tags?: string[] | null
     },
@@ -47,6 +48,7 @@ export const useWallpaper = () => {
           originalFilename: params?.originalFilename,
           deviceType: params?.deviceType,
           status: params?.status,
+          isFeatured: params?.isFeatured,
           category: params?.category,
           tags: params?.tags
         })

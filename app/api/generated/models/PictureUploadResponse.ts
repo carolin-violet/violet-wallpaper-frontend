@@ -80,6 +80,10 @@ export type PictureUploadResponse = {
      */
     status?: number;
     /**
+     * 是否精选：0=否，1=是
+     */
+    is_featured?: number;
+    /**
      * 分类
      */
     category?: (string | null);

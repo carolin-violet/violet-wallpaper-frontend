@@ -21,6 +21,17 @@
         />
       </div>
 
+      <div
+        v-if="wallpaper.is_featured === 1"
+        class="absolute top-2.5 left-2.5 inline-flex items-center gap-1 rounded-full bg-amber-400/95 text-[11px] font-semibold text-amber-950 px-2.5 py-1 shadow-[0_12px_30px_rgba(15,23,42,0.55)] backdrop-blur-md"
+      >
+        <UIcon
+          name="i-lucide-sparkles"
+          class="w-3 h-3"
+        />
+        精选
+      </div>
+
       <div class="absolute inset-0 pointer-events-none">
         <!-- 悬浮信息面板 -->
         <div
@@ -105,7 +116,7 @@
 </template>
 
 <script setup lang="ts">
-import type { PictureResponseInfo } from '~/api/generated/services/PicturesService'
+import type { PictureResponseInfo } from '~/api/generated'
 
 interface Props {
   wallpaper: PictureResponseInfo

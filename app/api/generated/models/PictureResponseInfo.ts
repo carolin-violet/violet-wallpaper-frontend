@@ -63,4 +63,8 @@ export type PictureResponseInfo = {
      * 审核状态：0=未审核，1=通过，2=未通过
      */
     status: number;
+    /**
+     * 是否精选：0=否，1=是
+     */
+    is_featured?: number;
 };

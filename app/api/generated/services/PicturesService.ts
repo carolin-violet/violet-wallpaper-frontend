@@ -61,6 +61,7 @@ maxHeight,
 originalFilename,
 deviceType,
 status,
+isFeatured,
 category,
 tags,
 }: {
@@ -105,6 +106,10 @@ deviceType?: (number | null),
  */
 status?: (number | null),
 /**
+ * 是否精选：0=否，1=是
+ */
+isFeatured?: (number | null),
+/**
  * 分类
  */
 category?: (string | null),
@@ -127,6 +132,7 @@ tags?: (Array<string> | null),
                 'original_filename': originalFilename,
                 'device_type': deviceType,
                 'status': status,
+                'is_featured': isFeatured,
                 'category': category,
                 'tags': tags,
             },

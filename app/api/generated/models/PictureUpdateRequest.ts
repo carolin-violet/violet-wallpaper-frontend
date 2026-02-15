@@ -12,6 +12,10 @@ export type PictureUpdateRequest = {
      */
     status?: (number | null);
     /**
+     * 是否精选：0=否，1=是
+     */
+    is_featured?: (number | null);
+    /**
      * 分类
      */
     category?: (string | null);
