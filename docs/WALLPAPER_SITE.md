@@ -98,7 +98,7 @@ pnpm dev
 在 `.env` 文件中配置：
 
 ```env
-API_BASE_URL=http://127.0.0.1:8203
+API_BASE_URL=http://wallpaper-backend.carolin-violet.cn:8000
 ```
 
 或在 `nuxt.config.ts` 中配置。

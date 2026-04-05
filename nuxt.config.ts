@@ -1,9 +1,8 @@
-// https://nuxt.com/docs/api/configuration/nuxt-config
+﻿// https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
   modules: ['@nuxt/eslint', '@nuxt/ui', '@nuxt/image'],
 
-  // 暂时禁用 SSR 以避免 reka-ui ConfigProvider 错误
-  ssr: false,
+  ssr: true,
 
   devtools: {
     enabled: true
@@ -13,14 +12,11 @@ export default defineNuxtConfig({
 
   runtimeConfig: {
     public: {
-      apiBaseUrl: process.env.API_BASE_URL || 'http://127.0.0.1:8203'
+      apiBaseUrl: process.env.API_BASE_URL || 'http://wallpaper-backend.carolin-violet.cn:8000'
     }
   },
 
-  routeRules: {
-    // 暂时禁用预渲染以避免 SSR 错误
-    // "/": { prerender: true },
-  },
+  routeRules: {},
 
   compatibilityDate: '2025-01-15',
 
@@ -35,7 +31,6 @@ export default defineNuxtConfig({
     }
   },
 
-  // 禁用 Google Fonts 提供程序以避免网络连接问题
   fonts: {
     providers: {
       google: false,

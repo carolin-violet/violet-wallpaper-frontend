@@ -182,7 +182,7 @@ const { getDictionaryName, initDictionaries } = useDictionary()
 const id = computed(() => Number(route.params.id))
 
 const config = useRuntimeConfig()
-const defaultApiBase = (config.public.apiBaseUrl as string) || 'http://127.0.0.1:8203'
+const defaultApiBase = (config.public.apiBaseUrl as string) || 'http://wallpaper-backend.carolin-violet.cn:8000'
 const ssrBaseURL = import.meta.server
   ? defaultApiBase
   : (import.meta.dev ? '' : defaultApiBase)

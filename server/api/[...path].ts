@@ -6,7 +6,7 @@
 
 export default defineEventHandler(async (event) => {
   const config = useRuntimeConfig()
-  const target = config.public.apiBaseUrl || 'http://127.0.0.1:8203'
+  const target = config.public.apiBaseUrl || 'http://wallpaper-backend.carolin-violet.cn:8000'
 
   // 获取路径参数（catch-all 路由）
   const path = getRouterParam(event, 'path') || ''

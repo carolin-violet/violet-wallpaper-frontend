@@ -25,7 +25,7 @@ pnpm run generate:api
 
 ### 方式二：从远程 Swagger URL 生成
 
-如果后端提供了 Swagger 文档访问地址（如 `http://127.0.0.1:8203/openapi.json`），可直接从 URL 生成：
+如果后端提供了 Swagger 文档访问地址（如 `http://wallpaper-backend.carolin-violet.cn:8000/openapi.json`），可直接从 URL 生成：
 
 ```bash
 pnpm run generate:api:url
@@ -34,7 +34,7 @@ pnpm run generate:api:url
 或者指定自定义 URL：
 
 ```bash
-node scripts/generate-api.mjs --input=http://127.0.0.1:8203/openapi.json
+node scripts/generate-api.mjs --input=http://wallpaper-backend.carolin-violet.cn:8000/openapi.json
 ```
 
 ## 使用生成的 API 客户端
@@ -82,7 +82,7 @@ export const useApi = async () => {
 在项目根目录创建 `.env` 文件（或 `.env.local`）：
 
 ```env
-API_BASE_URL=http://127.0.0.1:8203
+API_BASE_URL=http://wallpaper-backend.carolin-violet.cn:8000
 ```
 
 ### 方式二：Nuxt 配置
@@ -93,7 +93,7 @@ API_BASE_URL=http://127.0.0.1:8203
 export default defineNuxtConfig({
   runtimeConfig: {
     public: {
-      apiBaseUrl: process.env.API_BASE_URL || "http://127.0.0.1:8203",
+      apiBaseUrl: process.env.API_BASE_URL || "http://wallpaper-backend.carolin-violet.cn:8000",
     },
   },
 });

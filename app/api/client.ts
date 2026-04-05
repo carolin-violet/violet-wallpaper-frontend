@@ -1,57 +1,40 @@
-/**
- * API 客户端封装
- * 基于 openapi-typescript-codegen 生成的客户端进行二次封装
- *
- * 注意：首次使用前需要先运行 `pnpm run generate:api` 生成 API 客户端代码
- */
+﻿import { tryUseNuxtApp } from '#app'
 
 let isInitialized = false
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 let generatedModules: Record<string, any> | null = null
 
-/**
- * 初始化 API 客户端配置
- * @param overrideBaseURL 外部传入的 baseURL，用于 useAsyncData 等无 Nuxt 上下文的场景，避免内部调用 useRuntimeConfig()
- */
+function resolveBaseURL(overrideBaseURL?: string) {
+  if (overrideBaseURL !== undefined) {
+    return overrideBaseURL
+  }
+
+  if (import.meta.dev) {
+    return ''
+  }
+
+  const nuxtApp = tryUseNuxtApp()
+  const configBaseURL = nuxtApp?.$config?.public?.apiBaseUrl
+  return configBaseURL || 'http://127.0.0.1:8203'
+}
+
 async function initApiClient(overrideBaseURL?: string) {
   if (!isInitialized) {
     try {
       generatedModules = await import('./generated')
 
       if (!generatedModules || !generatedModules.OpenAPI) {
-        throw new Error(
-          '未找到生成的 OpenAPI 客户端，请先运行 `pnpm run generate:api` 生成 API 代码'
-        )
+        throw new Error('未找到生成的 OpenAPI 客户端，请先运行 `pnpm run generate:api` 生成 API 代码')
       }
 
-      // 验证服务类是否存在
       if (
         !generatedModules.PicturesService
         || !generatedModules.TagsService
         || !generatedModules.DictionariesService
       ) {
-        console.error('API 服务类缺失:', {
-          PicturesService: !!generatedModules.PicturesService,
-          TagsService: !!generatedModules.TagsService,
-          DictionariesService: !!generatedModules.DictionariesService,
-          availableKeys: Object.keys(generatedModules)
-        })
-        throw new Error(
-          'API 服务类未找到，请确保已运行 `pnpm run generate:api:url` 从后端生成完整的 API 代码'
-        )
+        throw new Error('API 服务类未找到，请确保已运行 `pnpm run generate:api:url` 从后端生成完整的 API 代码')
       }
 
-      const baseURL
-        = overrideBaseURL !== undefined
-          ? overrideBaseURL
-          : (() => {
-              const config = useRuntimeConfig()
-              const isDev = import.meta.dev
-              return isDev
-                ? ''
-                : config.public.apiBaseUrl || 'http://127.0.0.1:8203'
-            })()
-
+      const baseURL = resolveBaseURL(overrideBaseURL)
       generatedModules.OpenAPI.BASE = baseURL
       generatedModules.OpenAPI.VERSION = '1.0.0'
       generatedModules.OpenAPI.WITH_CREDENTIALS = false
@@ -61,9 +44,7 @@ async function initApiClient(overrideBaseURL?: string) {
     } catch (error: unknown) {
       const err = error as { code?: string }
       if (err.code === 'ERR_MODULE_NOT_FOUND') {
-        throw new Error(
-          'API 客户端未生成，请先运行 `pnpm run generate:api` 生成 API 代码'
-        )
+        throw new Error('API 客户端未生成，请先运行 `pnpm run generate:api` 生成 API 代码')
       }
       throw error
     }
@@ -72,10 +53,6 @@ async function initApiClient(overrideBaseURL?: string) {
   return generatedModules
 }
 
-/**
- * 获取 API 客户端
- * @param baseURL 可选，传入时在无 Nuxt 上下文（如 useAsyncData fetcher）中也可安全初始化，避免 useRuntimeConfig() 报错
- */
 export async function getApiClient(baseURL?: string) {
   const modules = await initApiClient(baseURL)
 
@@ -83,18 +60,14 @@ export async function getApiClient(baseURL?: string) {
     throw new Error('API 客户端初始化失败')
   }
 
-  if (baseURL && modules.OpenAPI) {
-    modules.OpenAPI.BASE = baseURL
+  if (modules.OpenAPI) {
+    modules.OpenAPI.BASE = resolveBaseURL(baseURL)
   }
 
-  // 确保服务类存在
   if (!modules.PicturesService || !modules.TagsService || !modules.DictionariesService) {
-    throw new Error(
-      'API 服务类未找到，请确保已运行 `pnpm run generate:api` 生成完整的 API 代码'
-    )
+    throw new Error('API 服务类未找到，请确保已运行 `pnpm run generate:api` 生成完整的 API 代码')
   }
 
-  // 返回服务类对象
   return {
     OpenAPI: modules.OpenAPI,
     PicturesService: modules.PicturesService,
@@ -104,9 +77,6 @@ export async function getApiClient(baseURL?: string) {
   }
 }
 
-/**
- * 设置 API 认证 token
- */
 export async function setApiToken(token: string) {
   const modules = await initApiClient()
   if (modules?.OpenAPI) {
@@ -114,9 +84,6 @@ export async function setApiToken(token: string) {
   }
 }
 
-/**
- * 清除 API 认证 token
- */
 export async function clearApiToken() {
   const modules = await initApiClient()
   if (modules?.OpenAPI) {
@@ -124,9 +91,6 @@ export async function clearApiToken() {
   }
 }
 
-/**
- * 设置自定义请求头
- */
 export async function setApiHeaders(headers: Record<string, string>) {
   const modules = await initApiClient()
   if (modules?.OpenAPI) {

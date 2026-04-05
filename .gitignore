@@ -27,3 +27,5 @@ logs
 # app/api/generated
 
 .cursor/skills/*
+
+.pnpm-store/

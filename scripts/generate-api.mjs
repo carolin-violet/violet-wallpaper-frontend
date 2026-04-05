@@ -19,7 +19,7 @@ if (!input) {
   console.error('❌ 错误: 请提供 --input 参数（OpenAPI 文档路径或 URL）')
   console.log('\n使用方法:')
   console.log('  node scripts/generate-api.mjs --input=./openapi.json')
-  console.log('  node scripts/generate-api.mjs --input=http://127.0.0.1:8203/openapi.json')
+  console.log('  node scripts/generate-api.mjs --input=http://wallpaper-backend.carolin-violet.cn:8000/openapi.json')
   process.exit(1)
 }
 const isUrl = input.startsWith('http://') || input.startsWith('https://')

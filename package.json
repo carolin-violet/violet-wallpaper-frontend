@@ -12,7 +12,7 @@
     "lint:staged": "eslint --fix",
     "typecheck": "nuxt typecheck",
     "generate:api": "node scripts/generate-api.mjs --input=./openapi.config.json",
-    "generate:api:url": "node scripts/generate-api.mjs --input=http://127.0.0.1:8203/openapi.json"
+    "generate:api:url": "node scripts/generate-api.mjs --input=http://wallpaper-backend.carolin-violet.cn:8000/openapi.json"
   },
   "dependencies": {
     "@iconify-json/lucide": "^1.2.74",
@@ -29,6 +29,22 @@
     "openapi-typescript-codegen": "^0.25.0",
     "typescript": "^5.9.3",
     "vue-tsc": "^3.1.5"
+  },
+  "pnpm": {
+    "overrides": {
+      "@nuxt/kit": "4.2.2",
+      "@nuxt/schema": "4.2.2",
+      "vue": "3.5.25",
+      "@vue/compiler-core": "3.5.25",
+      "@vue/compiler-dom": "3.5.25",
+      "@vue/compiler-sfc": "3.5.25",
+      "@vue/compiler-ssr": "3.5.25",
+      "@vue/reactivity": "3.5.25",
+      "@vue/runtime-core": "3.5.25",
+      "@vue/runtime-dom": "3.5.25",
+      "@vue/server-renderer": "3.5.25",
+      "@vue/shared": "3.5.25"
+    }
   },
   "packageManager": "pnpm@10.23.0"
 }
