@@ -1,93 +1,201 @@
 ﻿<template>
-  <div class="mx-auto max-w-10xl px-2 sm:px-4 py-8">
-    <!-- 筛选区域 -->
-    <div class="mb-8">
-      <div class="flex flex-wrap gap-4 items-center">
-        <!-- 设备类型 -->
-        <div class="flex items-center gap-2">
-          <span class="text-sm text-slate-600 dark:text-slate-300">设备类型：</span>
+  <div class="relative mx-auto max-w-[1780px] px-2 py-8 sm:px-4">
+    <div class="pointer-events-none absolute -left-12 top-0 h-56 w-56 rounded-full bg-violet-300/30 blur-3xl" />
+    <div class="pointer-events-none absolute -right-8 top-24 h-52 w-52 rounded-full bg-fuchsia-300/20 blur-3xl" />
+
+    <section class="relative z-10 mb-8 overflow-hidden rounded-[2rem] border border-violet-200/70 bg-white/75 p-4 shadow-[0_22px_70px_rgba(88,49,165,0.16)] backdrop-blur-2xl dark:border-violet-900/70 dark:bg-slate-950/70 sm:p-6">
+      <div class="absolute -right-8 -top-10 h-28 w-40 rotate-12 rounded-full bg-violet-300/25 blur-2xl" />
+      <div class="absolute -left-4 -bottom-8 h-24 w-32 rounded-full bg-fuchsia-300/15 blur-2xl" />
+
+      <div class="relative mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h1 class="text-lg font-semibold tracking-wide text-slate-800 dark:text-violet-100 sm:text-xl">
+            紫罗兰永恒花园 · 壁纸筛选台
+          </h1>
+          <p class="mt-1 text-xs text-slate-500 dark:text-violet-200/80 sm:text-sm">
+            更柔和的视觉层次，更明确的筛选反馈，更快找到你想要的画面。
+          </p>
+        </div>
+
+        <ClientOnly>
+          <div class="flex flex-wrap items-center gap-2 text-xs">
+            <span class="inline-flex items-center rounded-full border border-violet-200/80 bg-violet-50/70 px-3 py-1 text-violet-700 dark:border-violet-700/70 dark:bg-violet-900/40 dark:text-violet-100">
+              共 {{ total }} 张
+            </span>
+            <span class="inline-flex items-center rounded-full border border-fuchsia-200/80 bg-fuchsia-50/70 px-3 py-1 text-fuchsia-700 dark:border-fuchsia-700/70 dark:bg-fuchsia-900/40 dark:text-fuchsia-100">
+              已启用 {{ activeFilterCount }} 项筛选
+            </span>
+          </div>
+          <template #fallback>
+            <div class="flex flex-wrap items-center gap-2 text-xs">
+              <span class="inline-flex items-center rounded-full border border-violet-200/80 bg-violet-50/70 px-3 py-1 text-violet-700 dark:border-violet-700/70 dark:bg-violet-900/40 dark:text-violet-100">
+                共 0 张
+              </span>
+              <span class="inline-flex items-center rounded-full border border-fuchsia-200/80 bg-fuchsia-50/70 px-3 py-1 text-fuchsia-700 dark:border-fuchsia-700/70 dark:bg-fuchsia-900/40 dark:text-fuchsia-100">
+                已启用 0 项筛选
+              </span>
+            </div>
+          </template>
+        </ClientOnly>
+      </div>
+
+      <div class="relative grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-4">
+        <div class="rounded-2xl border border-violet-200/70 bg-white/85 p-3 shadow-[0_8px_20px_rgba(76,29,149,0.08)] dark:border-violet-900/70 dark:bg-slate-900/60">
+          <div class="mb-2 flex items-center justify-between">
+            <p class="text-xs font-medium text-slate-500 dark:text-violet-200/80">设备类型</p>
+            <UButton
+              v-if="filters.deviceType !== null"
+              size="xs"
+              color="neutral"
+              variant="ghost"
+              class="h-6 px-2 text-[11px]"
+              @click="clearDeviceType"
+            >
+              清空
+            </UButton>
+          </div>
           <USelectMenu
             v-model="filters.deviceType"
             :items="deviceTypeOptions"
             value-key="value"
-            placeholder="设备类型"
-            class="w-40"
+            placeholder="选择设备类型"
+            class="w-full"
           />
         </div>
 
-        <!-- 精选 -->
-        <div class="flex items-center gap-2">
-          <span class="text-sm text-slate-600 dark:text-slate-300">精选：</span>
+        <div class="rounded-2xl border border-violet-200/70 bg-white/85 p-3 shadow-[0_8px_20px_rgba(76,29,149,0.08)] dark:border-violet-900/70 dark:bg-slate-900/60">
+          <div class="mb-2 flex items-center justify-between">
+            <p class="text-xs font-medium text-slate-500 dark:text-violet-200/80">精选状态</p>
+            <UButton
+              v-if="filters.isFeatured !== null"
+              size="xs"
+              color="neutral"
+              variant="ghost"
+              class="h-6 px-2 text-[11px]"
+              @click="clearFeatured"
+            >
+              清空
+            </UButton>
+          </div>
           <USelectMenu
             v-model="filters.isFeatured"
             :items="featuredOptions"
             value-key="value"
-            placeholder="精选"
-            class="w-32"
+            placeholder="是否精选"
+            class="w-full"
           />
         </div>
 
-        <!-- 分类 -->
-        <div class="flex items-center gap-2">
-          <span class="text-sm text-slate-600 dark:text-slate-300">分类：</span>
+        <div class="rounded-2xl border border-violet-200/70 bg-white/85 p-3 shadow-[0_8px_20px_rgba(76,29,149,0.08)] dark:border-violet-900/70 dark:bg-slate-900/60">
+          <div class="mb-2 flex items-center justify-between">
+            <p class="text-xs font-medium text-slate-500 dark:text-violet-200/80">分类</p>
+            <UButton
+              v-if="filters.category !== null"
+              size="xs"
+              color="neutral"
+              variant="ghost"
+              class="h-6 px-2 text-[11px]"
+              @click="clearCategory"
+            >
+              清空
+            </UButton>
+          </div>
           <USelectMenu
             v-model="filters.category"
             :items="categoryOptions"
             value-key="value"
-            placeholder="分类"
-            class="w-40"
+            placeholder="选择分类"
+            class="w-full"
           />
         </div>
 
-        <!-- 标签 -->
-        <div class="flex items-center gap-2">
-          <span class="text-sm text-slate-600 dark:text-slate-300">标签：</span>
+        <div class="rounded-2xl border border-violet-200/70 bg-white/85 p-3 shadow-[0_8px_20px_rgba(76,29,149,0.08)] dark:border-violet-900/70 dark:bg-slate-900/60">
+          <div class="mb-2 flex items-center justify-between">
+            <p class="text-xs font-medium text-slate-500 dark:text-violet-200/80">标签（多选）</p>
+            <UButton
+              v-if="selectedTags.length > 0"
+              size="xs"
+              color="neutral"
+              variant="ghost"
+              class="h-6 px-2 text-[11px]"
+              @click="clearTags"
+            >
+              清空
+            </UButton>
+          </div>
           <USelectMenu
             v-model="selectedTags"
             :items="tagOptions"
             value-key="value"
-            placeholder="标签"
+            placeholder="选择标签"
             multiple
-            class="w-48"
+            class="w-full"
           />
         </div>
-
-        <!-- 清除筛选 -->
-        <UButton
-          v-if="hasActiveFilters"
-          variant="ghost"
-          color="neutral"
-          @click="clearFilters"
-        >
-          清除筛选
-        </UButton>
       </div>
+
+      <div class="relative mt-4 flex flex-wrap items-center justify-end gap-2">
+        <div class="mr-auto hidden text-xs text-slate-500 dark:text-violet-200/80 sm:block">
+          提示：可多选标签快速缩小范围
+        </div>
+        <ClientOnly>
+          <div class="flex items-center gap-2">
+            <UButton
+              variant="soft"
+              color="primary"
+              icon="i-lucide-shuffle"
+              :disabled="wallpapers.length === 0"
+              @click="pickRandomWallpaper"
+            >
+              随机一张
+            </UButton>
+            <UButton
+              v-if="hasActiveFilters"
+              variant="outline"
+              color="neutral"
+              icon="i-lucide-rotate-ccw"
+              @click="clearFilters"
+            >
+              重置筛选
+            </UButton>
+          </div>
+        </ClientOnly>
+      </div>
+    </section>
+
+    <div
+      id="wallpaper-grid"
+      class="scroll-mt-40"
+    >
+      <ClientOnly>
+        <WallpaperGrid
+          :wallpapers="wallpapers"
+          :loading="loading"
+          :tags-map="tagsMap"
+          @card-click="handleCardClick"
+          @download="handleDownload"
+          @view="handleView"
+        />
+        <template #fallback>
+          <div class="py-20 text-center text-sm text-violet-500 dark:text-violet-300/80">
+            正在加载壁纸...
+          </div>
+        </template>
+      </ClientOnly>
     </div>
 
-    <!-- 壁纸网格 -->
-    <WallpaperGrid
-      :wallpapers="wallpapers"
-      :loading="loading"
-      :tags-map="tagsMap"
-      @card-click="handleCardClick"
-      @download="handleDownload"
-      @view="handleView"
-    />
-
-    <!-- 分页 -->
-    <div
-      v-if="totalPages > 1"
-      class="mt-10 flex justify-center"
-    >
+    <ClientOnly>
       <div
-        class="inline-flex items-center gap-2 rounded-full bg-white/85 dark:bg-slate-950/90 px-4 sm:px-5 py-2 shadow-[0_18px_55px_rgba(15,23,42,0.22)] text-[11px] text-slate-800 dark:text-slate-200 border border-slate-200/80 dark:border-slate-800/80 backdrop-blur-xl"
+        v-if="totalPages > 1"
+        class="mt-10 flex justify-center"
       >
+        <div class="inline-flex items-center gap-2 rounded-full border border-violet-200/80 bg-white/85 px-4 py-2 text-[11px] text-slate-800 shadow-[0_18px_55px_rgba(73,41,130,0.26)] backdrop-blur-xl dark:border-violet-900/80 dark:bg-slate-950/90 dark:text-slate-100 sm:px-5">
         <UButton
           icon="i-lucide-arrow-left"
           size="xs"
-          color="neutral"
+          color="primary"
           variant="ghost"
-          class="rounded-full h-8 w-8 border border-slate-200/80 dark:border-slate-800/80"
+          class="h-8 w-8 rounded-full border border-violet-200/80 dark:border-violet-800/80"
           :disabled="currentPage <= 1 || loading"
           @click="goPrevPage"
         />
@@ -103,7 +211,7 @@
               size="xs"
               :color="item === currentPage ? 'primary' : 'neutral'"
               :variant="item === currentPage ? 'solid' : 'ghost'"
-              class="rounded-full min-w-8 h-8 justify-center px-0.5 text-[11px]"
+              class="h-8 min-w-8 justify-center rounded-full px-0.5 text-[11px]"
               :disabled="loading"
               @click="changePage(item)"
             />
@@ -116,32 +224,30 @@
           </template>
         </div>
 
-        <div class="hidden sm:flex items-center gap-1 ml-2">
+        <div class="ml-2 hidden items-center gap-1 sm:flex">
           <UInput
             v-model="inputPage"
             size="xs"
-            class="w-16 h-8 text-center text-[11px] rounded-full bg-slate-100/80 dark:bg-slate-900/70 border-slate-200/80 dark:border-slate-800/80"
+            class="h-8 w-16 rounded-full border-violet-200/80 bg-violet-50/70 text-center text-[11px] dark:border-violet-800/80 dark:bg-slate-900/70"
             :disabled="loading"
             placeholder="跳转"
             @keyup.enter="handleJump"
           />
           <UButton
             size="xs"
-            color="neutral"
+            color="primary"
             variant="soft"
-            class="rounded-full h-8 px-3 text-[11px]"
+            class="h-8 rounded-full px-3 text-[11px]"
             :disabled="loading"
             @click="handleJump"
           >
-            Go
+            前往
           </UButton>
         </div>
 
-        <div
-          class="ml-1 pl-3 border-l border-slate-200/80 dark:border-slate-700/70 text-slate-500 dark:text-slate-300/90 hidden sm:flex items-center gap-1"
-        >
+        <div class="ml-1 hidden items-center gap-1 border-l border-violet-200/80 pl-3 text-slate-500 dark:border-violet-800/70 dark:text-violet-200/90 sm:flex">
           <span>第</span>
-          <span class="font-semibold text-[11px]">{{ currentPage }}</span>
+          <span class="text-[11px] font-semibold">{{ currentPage }}</span>
           <span>/</span>
           <span class="text-[11px]">{{ totalPages }}</span>
         </div>
@@ -149,16 +255,16 @@
         <UButton
           icon="i-lucide-arrow-right"
           size="xs"
-          color="neutral"
+          color="primary"
           variant="ghost"
-          class="rounded-full h-8 w-8 border border-slate-200/80 dark:border-slate-800/80"
+          class="h-8 w-8 rounded-full border border-violet-200/80 dark:border-violet-800/80"
           :disabled="currentPage >= totalPages || loading"
           @click="goNextPage"
         />
+        </div>
       </div>
-    </div>
+    </ClientOnly>
 
-    <!-- 错误提示 -->
     <UAlert
       v-if="error"
       color="error"
@@ -186,15 +292,12 @@ const router = useRouter()
 
 const pageSize = 12
 
-// 在 setup 中取 baseURL，传入 useAsyncData fetcher，避免在 fetcher 内调用 useRuntimeConfig() 报错
-// 服务端必须使用绝对 URL，否则 Node/axios 会报 Invalid URL；仅客户端在 dev 下可使用相对路径走代理
 const config = useRuntimeConfig()
 const defaultApiBase = (config.public.apiBaseUrl as string) || 'http://wallpaper-backend.carolin-violet.cn:8000'
 const ssrBaseURL = import.meta.server
   ? defaultApiBase
   : (import.meta.dev ? '' : defaultApiBase)
 
-// SSR: 首屏壁纸、标签、字典在服务端请求
 const { data: initialWallpapers, pending: initialPending } = useAsyncData(
   'index-wallpapers',
   () => {
@@ -209,25 +312,19 @@ const { data: tagsData } = useAsyncData<TagResponse[]>(
   () => getTags(ssrBaseURL)
 )
 
-// 获取字典数据（包含分类 type=0）
 const { getDictionariesByType } = useDictionary()
 const { data: categoryDictData } = useAsyncData(
   'index-categories',
   () => getDictionariesByType(0, ssrBaseURL)
 )
 
-
-
-// 状态：首屏数据同步到 ref，便于客户端筛选和分页
 const wallpapers = ref<PictureResponseInfo[]>([])
 const tags = ref<TagResponse[]>([])
 const tagsMap = ref<Record<number, string[]>>({})
-const searchQuery = ref('')
 const selectedTags = ref<string[]>([])
 const currentPage = ref(1)
 const total = ref(0)
 
-// 筛选器
 const filters = ref({
   deviceType: null as number | null,
   isFeatured: null as number | null,
@@ -263,10 +360,8 @@ watch(
   { immediate: true }
 )
 
-// 合并 SSR 与客户端 loading
 const loading = computed(() => initialPending.value || wallpaperLoading.value)
 
-// 设备类型选项
 const deviceTypeOptions = [
   { label: '全部', value: null },
   { label: 'PC端', value: 1 },
@@ -279,7 +374,6 @@ const featuredOptions = [
   { label: '精选', value: 1 }
 ]
 
-// 标签选项：来自 TagsService.listTagsApiTagsListGet，按点击次数倒序
 const tagOptions = computed(() =>
   tags.value.map((tag: TagResponse) => ({
     label: tag.name,
@@ -287,11 +381,11 @@ const tagOptions = computed(() =>
   }))
 )
 
-// 分类选项：来自字典接口，type=0
 const categoryOptions = computed(() => {
   const options = [
     { label: '全部', value: null as string | null }
   ]
+
   if (categoryDictData.value && Array.isArray(categoryDictData.value)) {
     const categoryItems = categoryDictData.value.map(
       (item: {
@@ -303,12 +397,13 @@ const categoryOptions = computed(() => {
         value: (item.code || item.name) as string
       })
     )
+
     options.push(...categoryItems)
   }
+
   return options
 })
 
-// 是否有激活的筛选
 const hasActiveFilters = computed(() => {
   return (
     filters.value.deviceType !== null
@@ -318,6 +413,15 @@ const hasActiveFilters = computed(() => {
   )
 })
 
+const activeFilterCount = computed(() => {
+  let count = 0
+  if (filters.value.deviceType !== null) count += 1
+  if (filters.value.isFeatured !== null) count += 1
+  if (filters.value.category !== null) count += 1
+  if (selectedTags.value.length > 0) count += 1
+  return count
+})
+
 const totalPages = computed(() => {
   if (!total.value) return 1
   return Math.max(1, Math.ceil(total.value / pageSize))
@@ -325,19 +429,17 @@ const totalPages = computed(() => {
 
 const inputPage = ref('')
 
-// 客户端：加载壁纸（筛选、分页）
 const loadWallpapers = async (page = 1) => {
   try {
     wallpaperLoading.value = true
 
     const response = await getWallpapers({
       pageNum: page,
-      pageSize: pageSize,
+      pageSize,
       deviceType: filters.value.deviceType,
       isFeatured: filters.value.isFeatured,
       category: filters.value.category || null,
-      tags: selectedTags.value.length > 0 ? selectedTags.value : null,
-      originalFilename: searchQuery.value || null
+      tags: selectedTags.value.length > 0 ? selectedTags.value : null
     })
 
     if (response) {
@@ -345,6 +447,10 @@ const loadWallpapers = async (page = 1) => {
       wallpapers.value = newWallpapers
       total.value = response.total ?? newWallpapers.length
       currentPage.value = page
+
+      if (import.meta.client && page > 1) {
+        document.getElementById('wallpaper-grid')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      }
     }
   } catch (err) {
     console.error('加载壁纸失败:', err)
@@ -414,9 +520,28 @@ const handleJump = () => {
   changePage(target)
 }
 
-const handleSearch = () => {
-  currentPage.value = 1
-  loadWallpapers(1)
+const pickRandomWallpaper = () => {
+  if (wallpapers.value.length === 0) return
+  const random = wallpapers.value[Math.floor(Math.random() * wallpapers.value.length)]
+  if (random?.id) {
+    navigateTo(`/wallpaper/${random.id}`)
+  }
+}
+
+const clearDeviceType = () => {
+  filters.value.deviceType = null
+}
+
+const clearFeatured = () => {
+  filters.value.isFeatured = null
+}
+
+const clearCategory = () => {
+  filters.value.category = null
+}
+
+const clearTags = () => {
+  selectedTags.value = []
 }
 
 const clearFilters = () => {
@@ -426,8 +551,8 @@ const clearFilters = () => {
     category: null,
     tags: null
   }
+
   selectedTags.value = []
-  searchQuery.value = ''
   currentPage.value = 1
   router.replace({ query: {} })
   loadWallpapers(1)
@@ -437,10 +562,12 @@ watch(
   [() => filters.value.deviceType, () => filters.value.isFeatured, () => filters.value.category, selectedTags],
   () => {
     currentPage.value = 1
+
     const query: Record<string, string> = {}
     if (filters.value.isFeatured === 1) {
       query.featured = '1'
     }
+
     router.replace({ query })
     loadWallpapers(1)
   },
@@ -466,4 +593,3 @@ const handleView = async (wallpaper: PictureResponseInfo) => {
   navigateTo(`/wallpaper/${wallpaper.id}`)
 }
 </script>
-

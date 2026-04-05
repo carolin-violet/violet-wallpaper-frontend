@@ -52,6 +52,13 @@ export const useDictionary = () => {
     return []
   }
 
+  const normalizeComparable = (value: unknown): string => {
+    if (value === null || value === undefined) {
+      return ''
+    }
+    return String(value).trim()
+  }
+
   const getDictionaries = async (baseURL?: string, type?: number) => {
     if (dictionaries.value.length > 0) {
       if (type === undefined) {
@@ -94,7 +101,7 @@ export const useDictionary = () => {
         const axiosResponse = await axios.get(url)
         response = axiosResponse.data
       } else {
-        response = await api.DictionariesService.getAllDictionariesApiDictionariesGet()
+        response = await api.DictionariesService.getAllDictionariesApiDictionariesGet({})
       }
 
       let data: DictionaryItem[] = normalizeDictionaryList(response)
@@ -126,17 +133,22 @@ export const useDictionary = () => {
     return getDictionaries(baseURL, type)
   }
 
-  const getDictionaryName = (code: string | null | undefined): string => {
-    if (!code) return ''
-    const item = dictionaries.value.find(item => item.code === code)
-    return item?.name_cn || item?.name || code
+  const getDictionaryName = (code: string | number | null | undefined): string => {
+    if (code === null || code === undefined || code === '') return ''
+
+    const normalizedCode = normalizeComparable(code)
+    const item = dictionaries.value.find(item => normalizeComparable(item.code) === normalizedCode)
+
+    return item?.name_cn || item?.name || normalizedCode
   }
 
   const getDictionaryItem = (
-    code: string | null | undefined
+    code: string | number | null | undefined
   ): DictionaryItem | null => {
-    if (!code) return null
-    return dictionaries.value.find(item => item.code === code) || null
+    if (code === null || code === undefined || code === '') return null
+
+    const normalizedCode = normalizeComparable(code)
+    return dictionaries.value.find(item => normalizeComparable(item.code) === normalizedCode) || null
   }
 
   const initDictionaries = async () => {

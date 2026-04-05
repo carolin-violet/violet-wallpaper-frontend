@@ -177,7 +177,7 @@
 const route = useRoute()
 const router = useRouter()
 const { getWallpaperById, downloadPicture, incrementView } = useWallpaper()
-const { getDictionaryName, initDictionaries } = useDictionary()
+const { getDictionaryName, getDictionariesByType, initDictionaries } = useDictionary()
 
 const id = computed(() => Number(route.params.id))
 
@@ -186,6 +186,11 @@ const defaultApiBase = (config.public.apiBaseUrl as string) || 'http://wallpaper
 const ssrBaseURL = import.meta.server
   ? defaultApiBase
   : (import.meta.dev ? '' : defaultApiBase)
+
+const { data: categoryDictData } = useAsyncData(
+  'wallpaper-detail-categories',
+  () => getDictionariesByType(0, ssrBaseURL)
+)
 
 // SSR：使用详情接口获取单个壁纸
 const {
@@ -226,8 +231,18 @@ onMounted(() => {
   }
 })
 
-// 分类中文名（来自字典）
-const categoryName = computed(() => getDictionaryName(wallpaper.value?.category))
+// 分类中文名（优先详情页分类字典，其次全局字典）
+const categoryName = computed(() => {
+  const categoryCode = wallpaper.value?.category
+  if (categoryCode === null || categoryCode === undefined || categoryCode === '') {
+    return ''
+  }
+
+  const normalizedCode = String(categoryCode).trim()
+  const localCategory = categoryDictData.value?.find((item: any) => String(item?.code ?? '').trim() === normalizedCode)
+
+  return localCategory?.name_cn || localCategory?.name || getDictionaryName(categoryCode)
+})
 
 // 获取设备类型名称
 const getDeviceTypeName = (type: number | null) => {

@@ -1,4 +1,4 @@
-<script setup lang="ts">
+﻿<script setup lang="ts">
 useHead({
   meta: [{ name: 'viewport', content: 'width=device-width, initial-scale=1' }],
   link: [{ rel: 'icon', href: '/favicon.ico' }],
@@ -7,9 +7,8 @@ useHead({
   }
 })
 
-const title = 'Violet Wallpaper - 精美壁纸分享'
-const description
-  = '发现和下载精美的高质量壁纸，涵盖PC端、移动端和头像等多种类型。'
+const title = 'Violet Wallpaper - 紫罗兰壁纸美学'
+const description = '发现并下载高质量壁纸，覆盖 PC、移动端与头像等多种类型。'
 
 useSeoMeta({
   title,
@@ -22,23 +21,23 @@ useSeoMeta({
 
 <template>
   <UApp>
-    <UHeader>
+    <UHeader class="border-b border-violet-200/60 dark:border-violet-900/60 bg-white/75 dark:bg-slate-950/80 backdrop-blur-xl">
       <template #left>
         <NuxtLink
           to="/"
-          class="flex items-center gap-2"
+          class="group flex items-center gap-2"
         >
           <UIcon
-            name="i-lucide-image"
-            class="w-6 h-6 text-primary"
+            name="i-lucide-flower-2"
+            class="h-6 w-6 text-violet-500 transition-transform duration-300 group-hover:rotate-12"
           />
-          <span class="font-bold text-lg">Violet Wallpaper</span>
+          <span class="text-lg font-semibold tracking-wide text-slate-800 dark:text-slate-100">Violet Wallpaper</span>
         </NuxtLink>
 
-        <nav class="hidden md:flex items-center gap-4 ml-8">
+        <nav class="ml-8 hidden items-center gap-4 md:flex">
           <NuxtLink
             to="/"
-            class="text-sm font-medium hover:text-primary transition-colors"
+            class="text-sm font-medium text-slate-600 transition-colors hover:text-violet-600 dark:text-slate-300 dark:hover:text-violet-300"
           >
             首页
           </NuxtLink>
@@ -56,12 +55,12 @@ useSeoMeta({
       <NuxtPage />
     </UMain>
 
-    <USeparator icon="i-simple-icons-nuxtdotjs" />
+    <USeparator icon="i-lucide-sparkles" />
 
     <UFooter>
       <template #left>
         <p class="text-sm text-muted">
-          Violet Wallpaper • © {{ new Date().getFullYear() }}
+          Violet Wallpaper · © {{ new Date().getFullYear() }}
         </p>
       </template>
     </UFooter>

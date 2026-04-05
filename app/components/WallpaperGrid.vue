@@ -1,34 +1,32 @@
-<template>
+﻿<template>
   <div class="w-full">
-
-    <!-- 加载状态：固定卡片宽度 + flex-wrap 自适应换行 -->
     <div
       v-if="loading"
-      class="flex flex-wrap gap-4 sm:gap-6 w-full justify-center"
+      :style="listStyle"
     >
       <div
         v-for="i in 12"
         :key="i"
-        class="wallpaper-card-wrapper"
+        class="wallpaper-grid-col"
+        :style="itemStyle"
       >
-        <div class="rounded-[1.25rem] bg-gray-200 dark:bg-gray-700 animate-pulse aspect-4/3 w-full" />
+        <div class="aspect-4/3 w-full animate-pulse rounded-[1.25rem] bg-violet-100 dark:bg-violet-950/40" />
       </div>
     </div>
 
-    <!-- 非加载状态：有数据显示网格，无数据显示空状态 -->
     <div
       v-else
       class="w-full"
     >
-      <!-- 有数据：固定卡片宽度 + flex-wrap 自适应多列布局 -->
       <div
         v-if="wallpapers && wallpapers.length > 0"
-        class="flex flex-wrap gap-4 sm:gap-6 w-full justify-center"
+        :style="listStyle"
       >
         <div
           v-for="wallpaper in wallpapers"
           :key="wallpaper.id"
-          class="wallpaper-card-wrapper"
+          class="wallpaper-grid-col"
+          :style="itemStyle"
         >
           <WallpaperCard
             :wallpaper="wallpaper"
@@ -40,42 +38,39 @@
         </div>
       </div>
 
-      <!-- 空状态 -->
       <div
         v-else
         class="flex flex-col items-center justify-center py-20 text-center"
       >
         <UIcon
           name="i-lucide-image-off"
-          class="w-16 h-16 text-gray-400 mb-4"
+          class="mb-4 h-16 w-16 text-violet-300"
         />
-        <p class="text-gray-500 dark:text-gray-400">
+        <p class="text-violet-500 dark:text-violet-300/80">
           暂无壁纸
         </p>
       </div>
     </div>
 
-    <!-- 预览弹窗 -->
     <UModal
       v-model="showPreview"
       class="wallpaper-preview-modal"
       :ui="{
-        wrapper: 'fixed inset-0 w-screen h-screen max-w-none z-[9999]',
-        overlay: 'fixed inset-0 bg-black/50 z-[9999]',
-        content:
-          'fixed inset-0 w-full h-full max-w-none m-0 flex items-center justify-center z-[9999]'
+        wrapper: 'fixed inset-0 z-[9999] h-screen w-screen max-w-none',
+        overlay: 'fixed inset-0 z-[9999] bg-black/50',
+        content: 'fixed inset-0 z-[9999] m-0 flex h-full w-full max-w-none items-center justify-center'
       }"
     >
       <UCard
         v-if="previewWallpaper"
-        class="w-[95vw] h-[95vh] max-w-[95vw] max-h-[95vh] flex flex-col m-auto min-h-0"
-        :ui="{ body: 'flex-1 min-h-0 overflow-hidden flex flex-col', header: 'flex-shrink-0' }"
+        class="m-auto flex h-[95vh] max-h-[95vh] min-h-0 w-[95vw] max-w-[95vw] flex-col"
+        :ui="{ body: 'flex flex-1 min-h-0 flex-col overflow-hidden', header: 'flex-shrink-0' }"
         @click.stop
       >
         <template #header>
           <div class="flex items-center justify-between">
             <h3 class="text-lg font-semibold">
-              {{ previewWallpaper.original_filename || "壁纸预览" }}
+              {{ previewWallpaper.original_filename || '壁纸预览' }}
             </h3>
             <UButton
               icon="i-lucide-x"
@@ -87,22 +82,20 @@
           </div>
         </template>
 
-        <div
-          class="flex-1 min-h-0 flex items-center justify-center bg-gray-100 dark:bg-gray-800 overflow-hidden w-full"
-        >
+        <div class="flex min-h-0 w-full flex-1 items-center justify-center overflow-hidden bg-gray-100 dark:bg-gray-800">
           <NuxtImg
             v-if="previewWallpaper.webp_url"
             :src="previewWallpaper.webp_url"
             :alt="previewWallpaper.original_filename || '壁纸'"
-            class="w-full h-full object-contain"
+            class="h-full w-full object-contain"
           />
           <div
             v-else
-            class="aspect-video flex items-center justify-center bg-gray-200 dark:bg-gray-700"
+            class="flex aspect-video items-center justify-center bg-gray-200 dark:bg-gray-700"
           >
             <UIcon
               name="i-lucide-image"
-              class="w-16 h-16 text-gray-400"
+              class="h-16 w-16 text-gray-400"
             />
           </div>
         </div>
@@ -148,22 +141,50 @@ const handleDownload = (wallpaper: PictureResponseInfo) => {
 const showPreview = ref(false)
 const previewWallpaper = ref<PictureResponseInfo | null>(null)
 const isClosing = ref(false)
+const viewportWidth = ref(1920)
+
+const getColumnCount = (width: number) => {
+  if (width < 900) return 1
+  if (width < 1280) return 2
+  if (width < 1800) return 3
+  return 4
+}
+
+const columnCount = computed(() => getColumnCount(viewportWidth.value))
+
+const listStyle = computed(() => 'display:flex;flex-wrap:wrap;width:100%;gap:1.25rem;align-items:flex-start;')
+
+const itemStyle = computed(() => {
+  if (columnCount.value <= 1) return 'flex:0 0 100%;max-width:100%;min-width:0;'
+  if (columnCount.value === 2) return 'flex:0 0 calc(50% - 0.625rem);max-width:calc(50% - 0.625rem);min-width:0;'
+  if (columnCount.value === 3) return 'flex:0 0 calc(33.333333% - 0.833333rem);max-width:calc(33.333333% - 0.833333rem);min-width:0;'
+  return 'flex:0 0 calc(25% - 0.9375rem);max-width:calc(25% - 0.9375rem);min-width:0;'
+})
+
+const updateViewportWidth = () => {
+  viewportWidth.value = window.innerWidth || 1920
+}
+
+onMounted(() => {
+  updateViewportWidth()
+  window.addEventListener('resize', updateViewportWidth, { passive: true })
+})
+
+onBeforeUnmount(() => {
+  window.removeEventListener('resize', updateViewportWidth)
+})
 
 const handleView = (wallpaper: PictureResponseInfo) => {
-  // 如果正在关闭，忽略新的预览请求
   if (isClosing.value) {
     return
   }
   previewWallpaper.value = wallpaper
   showPreview.value = true
-  // 不向上传递 view 事件，避免导航到详情页
-  // 预览次数已在 WallpaperCard 中增加
 }
 
 const closePreview = () => {
   isClosing.value = true
   showPreview.value = false
-  // 延迟清空预览壁纸和关闭标志，避免关闭动画时内容消失
   setTimeout(() => {
     previewWallpaper.value = null
     isClosing.value = false
@@ -172,18 +193,13 @@ const closePreview = () => {
 </script>
 
 <style scoped>
-/* 确保网格项可以收缩，防止撑开列 */
-.wallpaper-grid-wrapper > * {
-  min-width: 0 !important;
-  overflow: hidden !important;
-  width: 100% !important;
+.wallpaper-grid-col > * {
+  width: 100%;
+  min-width: 0;
 }
 </style>
 
-
 <style>
-/* 强制设置预览弹窗的 z-index 和定位 */
-/* 使用全局样式确保样式生效，覆盖 UModal 的默认样式 */
 .wallpaper-preview-modal,
 .wallpaper-preview-modal [data-headlessui-state],
 .wallpaper-preview-modal [data-headlessui-state] > div,
@@ -196,7 +212,6 @@ const closePreview = () => {
   transform: translate3d(-50%, -50%, 0);
 }
 
-/* 确保 wrapper 覆盖整个屏幕 */
 .wallpaper-preview-modal [data-headlessui-state] > div:first-child,
 .wallpaper-preview-modal [role="dialog"] > div:first-child {
   inset: 0 !important;
@@ -204,7 +219,6 @@ const closePreview = () => {
   height: 100vh !important;
 }
 
-/* 确保 content 区域正确居中 */
 .wallpaper-preview-modal [data-headlessui-state] > div:last-child,
 .wallpaper-preview-modal [role="dialog"] > div:last-child {
   display: flex !important;
