@@ -1,69 +1,70 @@
 ﻿<template>
   <div class="mx-auto max-w-10xl px-2 sm:px-4 py-8">
-    <!-- 绛涢€夊尯鍩?-->
+    <!-- 筛选区域 -->
     <div class="mb-8">
       <div class="flex flex-wrap gap-4 items-center">
-        <!-- 璁惧绫诲瀷 -->
+        <!-- 设备类型 -->
         <div class="flex items-center gap-2">
-          <span class="text-sm text-slate-600 dark:text-slate-300">璁惧绫诲瀷锛?/span>
+          <span class="text-sm text-slate-600 dark:text-slate-300">设备类型：</span>
           <USelectMenu
             v-model="filters.deviceType"
             :items="deviceTypeOptions"
             value-key="value"
-            placeholder="璁惧绫诲瀷"
+            placeholder="设备类型"
             class="w-40"
           />
         </div>
 
-        <!-- 绮鹃€?-->
+        <!-- 精选 -->
         <div class="flex items-center gap-2">
-          <span class="text-sm text-slate-600 dark:text-slate-300">绮鹃€夛細</span>
+          <span class="text-sm text-slate-600 dark:text-slate-300">精选：</span>
           <USelectMenu
             v-model="filters.isFeatured"
             :items="featuredOptions"
             value-key="value"
-            placeholder="绮鹃€?
+            placeholder="精选"
             class="w-32"
           />
         </div>
 
-        <!-- 鍒嗙被 -->
+        <!-- 分类 -->
         <div class="flex items-center gap-2">
-          <span class="text-sm text-slate-600 dark:text-slate-300">鍒嗙被锛?/span>
+          <span class="text-sm text-slate-600 dark:text-slate-300">分类：</span>
           <USelectMenu
             v-model="filters.category"
             :items="categoryOptions"
             value-key="value"
-            placeholder="鍒嗙被"
+            placeholder="分类"
             class="w-40"
           />
         </div>
 
-        <!-- 鏍囩 -->
+        <!-- 标签 -->
         <div class="flex items-center gap-2">
-          <span class="text-sm text-slate-600 dark:text-slate-300">鏍囩锛?/span>
+          <span class="text-sm text-slate-600 dark:text-slate-300">标签：</span>
           <USelectMenu
             v-model="selectedTags"
             :items="tagOptions"
             value-key="value"
-            placeholder="鏍囩"
+            placeholder="标签"
             multiple
             class="w-48"
           />
         </div>
 
-        <!-- 娓呴櫎绛涢€?-->
+        <!-- 清除筛选 -->
         <UButton
           v-if="hasActiveFilters"
           variant="ghost"
           color="neutral"
           @click="clearFilters"
         >
-          娓呴櫎绛涢€?        </UButton>
+          清除筛选
+        </UButton>
       </div>
     </div>
 
-    <!-- 澹佺焊缃戞牸 -->
+    <!-- 壁纸网格 -->
     <WallpaperGrid
       :wallpapers="wallpapers"
       :loading="loading"
@@ -73,7 +74,7 @@
       @view="handleView"
     />
 
-    <!-- 鍒嗛〉 -->
+    <!-- 分页 -->
     <div
       v-if="totalPages > 1"
       class="mt-10 flex justify-center"
@@ -121,7 +122,7 @@
             size="xs"
             class="w-16 h-8 text-center text-[11px] rounded-full bg-slate-100/80 dark:bg-slate-900/70 border-slate-200/80 dark:border-slate-800/80"
             :disabled="loading"
-            placeholder="璺宠浆"
+            placeholder="跳转"
             @keyup.enter="handleJump"
           />
           <UButton
@@ -139,7 +140,7 @@
         <div
           class="ml-1 pl-3 border-l border-slate-200/80 dark:border-slate-700/70 text-slate-500 dark:text-slate-300/90 hidden sm:flex items-center gap-1"
         >
-          <span>绗?/span>
+          <span>第</span>
           <span class="font-semibold text-[11px]">{{ currentPage }}</span>
           <span>/</span>
           <span class="text-[11px]">{{ totalPages }}</span>
@@ -157,7 +158,7 @@
       </div>
     </div>
 
-    <!-- 閿欒鎻愮ず -->
+    <!-- 错误提示 -->
     <UAlert
       v-if="error"
       color="error"
@@ -185,8 +186,8 @@ const router = useRouter()
 
 const pageSize = 12
 
-// 鍦?setup 涓彇 baseURL锛屼紶鍏?useAsyncData fetcher锛岄伩鍏?fetcher 鍐呰皟鐢?useRuntimeConfig() 鎶ラ敊
-// 鏈嶅姟绔繀椤荤敤缁濆 URL锛屽惁鍒?Node/axios 浼氭姤 Invalid URL锛涗粎瀹㈡埛绔湪 dev 涓嬪彲鐢ㄧ浉瀵硅矾寰勮蛋浠ｇ悊
+// 在 setup 中取 baseURL，传入 useAsyncData fetcher，避免在 fetcher 内调用 useRuntimeConfig() 报错
+// 服务端必须使用绝对 URL，否则 Node/axios 会报 Invalid URL；仅客户端在 dev 下可使用相对路径走代理
 const config = useRuntimeConfig()
 const defaultApiBase = (config.public.apiBaseUrl as string) || 'http://wallpaper-backend.carolin-violet.cn:8000'
 const ssrBaseURL = import.meta.server
@@ -217,7 +218,7 @@ const { data: categoryDictData } = useAsyncData(
 
 
 
-// 鐘舵€侊細棣栧睆鏁版嵁鍚屾鍒?ref锛屼究浜庡鎴风绛涢€?鍒嗛〉
+// 状态：首屏数据同步到 ref，便于客户端筛选和分页
 const wallpapers = ref<PictureResponseInfo[]>([])
 const tags = ref<TagResponse[]>([])
 const tagsMap = ref<Record<number, string[]>>({})
@@ -226,7 +227,7 @@ const selectedTags = ref<string[]>([])
 const currentPage = ref(1)
 const total = ref(0)
 
-// 绛涢€夊櫒
+// 筛选器
 const filters = ref({
   deviceType: null as number | null,
   isFeatured: null as number | null,
@@ -262,10 +263,10 @@ watch(
   { immediate: true }
 )
 
-// 鍚堝苟 SSR 涓庡鎴风 loading
+// 合并 SSR 与客户端 loading
 const loading = computed(() => initialPending.value || wallpaperLoading.value)
 
-// 璁惧绫诲瀷閫夐」
+// 设备类型选项
 const deviceTypeOptions = [
   { label: '全部', value: null },
   { label: 'PC端', value: 1 },
@@ -278,7 +279,7 @@ const featuredOptions = [
   { label: '精选', value: 1 }
 ]
 
-// 鏍囩閫夐」锛氭潵鑷?TagsService.listTagsApiTagsListGet锛屾寜鐐瑰嚮娆℃暟鍊掑簭
+// 标签选项：来自 TagsService.listTagsApiTagsListGet，按点击次数倒序
 const tagOptions = computed(() =>
   tags.value.map((tag: TagResponse) => ({
     label: tag.name,
@@ -286,10 +287,10 @@ const tagOptions = computed(() =>
   }))
 )
 
-// 鍒嗙被閫夐」锛氭潵鑷瓧鍏告帴鍙ｏ紝type=0
+// 分类选项：来自字典接口，type=0
 const categoryOptions = computed(() => {
   const options = [
-    { label: '鍏ㄩ儴', value: null as string | null }
+    { label: '全部', value: null as string | null }
   ]
   if (categoryDictData.value && Array.isArray(categoryDictData.value)) {
     const categoryItems = categoryDictData.value.map(
@@ -324,7 +325,7 @@ const totalPages = computed(() => {
 
 const inputPage = ref('')
 
-// 瀹㈡埛绔細鍔犺浇澹佺焊锛堢瓫閫夈€佸垎椤碉級
+// 客户端：加载壁纸（筛选、分页）
 const loadWallpapers = async (page = 1) => {
   try {
     wallpaperLoading.value = true
@@ -346,7 +347,7 @@ const loadWallpapers = async (page = 1) => {
       currentPage.value = page
     }
   } catch (err) {
-    console.error('鍔犺浇澹佺焊澶辫触:', err)
+    console.error('加载壁纸失败:', err)
   } finally {
     wallpaperLoading.value = false
   }
@@ -456,7 +457,7 @@ const handleDownload = async (wallpaper: PictureResponseInfo) => {
     const filename = wallpaper.original_filename || `wallpaper-${wallpaper.id}`
     downloadBlobAsFile(blob, filename)
   } catch (err) {
-    console.error('涓嬭浇澶辫触:', err)
+    console.error('下载失败:', err)
   }
 }
 
