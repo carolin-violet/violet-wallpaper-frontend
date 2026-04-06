@@ -1,20 +1,44 @@
-﻿import { tryUseNuxtApp } from '#app'
+import { tryUseNuxtApp } from '#app'
+
+type GeneratedApiModule = typeof import('./generated')
 
 let isInitialized = false
-let generatedModules: Record<string, any> | null = null
+let generatedModules: GeneratedApiModule | null = null
+
+function normalizeBaseURL(value: string): string {
+  return value.replace(/\/+$/, '')
+}
+
+function requireRuntimeApiBaseURL(): string {
+  const nuxtApp = tryUseNuxtApp()
+  const configBaseURL = nuxtApp?.$config?.public?.apiBaseUrl
+
+  if (typeof configBaseURL === 'string' && configBaseURL.trim().length > 0) {
+    return normalizeBaseURL(configBaseURL.trim())
+  }
+
+  throw new Error('Missing API_BASE_URL: please set runtimeConfig.public.apiBaseUrl in production')
+}
 
 function resolveBaseURL(overrideBaseURL?: string) {
   if (overrideBaseURL !== undefined) {
-    return overrideBaseURL
+    return normalizeBaseURL(overrideBaseURL)
   }
 
   if (import.meta.dev) {
     return ''
   }
 
-  const nuxtApp = tryUseNuxtApp()
-  const configBaseURL = nuxtApp?.$config?.public?.apiBaseUrl
-  return configBaseURL || 'http://127.0.0.1:8203'
+  return requireRuntimeApiBaseURL()
+}
+
+function getErrorCode(error: unknown): string | undefined {
+  if (typeof error !== 'object' || error === null || !('code' in error)) {
+    return undefined
+  }
+
+  const code = (error as { code?: unknown }).code
+  return typeof code === 'string' ? code : undefined
 }
 
 async function initApiClient(overrideBaseURL?: string) {
@@ -23,7 +47,7 @@ async function initApiClient(overrideBaseURL?: string) {
       generatedModules = await import('./generated')
 
       if (!generatedModules || !generatedModules.OpenAPI) {
-        throw new Error('未找到生成的 OpenAPI 客户端，请先运行 `pnpm run generate:api` 生成 API 代码')
+        throw new Error('Generated OpenAPI client not found. Run `pnpm run generate:api` first.')
       }
 
       if (
@@ -31,7 +55,7 @@ async function initApiClient(overrideBaseURL?: string) {
         || !generatedModules.TagsService
         || !generatedModules.DictionariesService
       ) {
-        throw new Error('API 服务类未找到，请确保已运行 `pnpm run generate:api:url` 从后端生成完整的 API 代码')
+        throw new Error('Generated API services not found. Run `pnpm run generate:api:url` first.')
       }
 
       const baseURL = resolveBaseURL(overrideBaseURL)
@@ -42,9 +66,8 @@ async function initApiClient(overrideBaseURL?: string) {
 
       isInitialized = true
     } catch (error: unknown) {
-      const err = error as { code?: string }
-      if (err.code === 'ERR_MODULE_NOT_FOUND') {
-        throw new Error('API 客户端未生成，请先运行 `pnpm run generate:api` 生成 API 代码')
+      if (getErrorCode(error) === 'ERR_MODULE_NOT_FOUND') {
+        throw new Error('API client not generated. Run `pnpm run generate:api` first.')
       }
       throw error
     }
@@ -57,7 +80,7 @@ export async function getApiClient(baseURL?: string) {
   const modules = await initApiClient(baseURL)
 
   if (!modules) {
-    throw new Error('API 客户端初始化失败')
+    throw new Error('Failed to initialize API client')
   }
 
   if (modules.OpenAPI) {
@@ -65,7 +88,7 @@ export async function getApiClient(baseURL?: string) {
   }
 
   if (!modules.PicturesService || !modules.TagsService || !modules.DictionariesService) {
-    throw new Error('API 服务类未找到，请确保已运行 `pnpm run generate:api` 生成完整的 API 代码')
+    throw new Error('Generated API services not found. Run `pnpm run generate:api` first.')
   }
 
   return {

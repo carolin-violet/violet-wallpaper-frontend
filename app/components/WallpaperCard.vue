@@ -121,12 +121,7 @@ const emit = defineEmits<{
   view: [wallpaper: PictureResponseInfo]
 }>()
 
-const { incrementView } = useWallpaper()
-const { getDictionaryName, initDictionaries } = useDictionary()
-
-onMounted(() => {
-  initDictionaries()
-})
+const { getDictionaryName } = useDictionary()
 
 const categoryName = computed(() => {
   return getDictionaryName(props.wallpaper.category)
@@ -154,11 +149,7 @@ const handleClick = () => {
   emit('click', props.wallpaper)
 }
 
-const handleView = async () => {
-  if (props.wallpaper.id) {
-    await incrementView(props.wallpaper.id)
-  }
-
+const handleView = () => {
   emit('view', props.wallpaper)
 }
 </script>

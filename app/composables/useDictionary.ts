@@ -3,12 +3,18 @@
 interface DictionaryItem {
   code: string
   name: string
+  name_cn?: string
+  dict_type?: number | string
+  dictionary_type?: number | string
+  category_type?: number | string
   type?: number
-  [key: string]: any
+  [key: string]: unknown
 }
 
+let dictionariesRequestPromise: Promise<DictionaryItem[]> | null = null
+const dictionariesByTypeRequestMap = new Map<number, Promise<DictionaryItem[]>>()
+
 export const useDictionary = () => {
-  const runtimeConfig = useRuntimeConfig()
   const dictionaries = useState<DictionaryItem[]>('dictionaries', () => [])
   const loading = useState<boolean>('dictionaries-loading', () => false)
   const error = useState<string | null>('dictionaries-error', () => null)
@@ -59,6 +65,22 @@ export const useDictionary = () => {
     return String(value).trim()
   }
 
+  const requestDictionaries = async (baseURL?: string, type?: number): Promise<DictionaryItem[]> => {
+    const api = await getApiClient(baseURL)
+    const response = await api.DictionariesService.getAllDictionariesApiDictionariesGet({
+      type: type ?? null
+    })
+
+    let data: DictionaryItem[] = normalizeDictionaryList(response)
+
+    if (type !== undefined) {
+      const typed = data.filter(item => getItemType(item) === type)
+      data = typed.length > 0 ? typed : data
+    }
+
+    return data
+  }
+
   const getDictionaries = async (baseURL?: string, type?: number) => {
     if (dictionaries.value.length > 0) {
       if (type === undefined) {
@@ -71,50 +93,36 @@ export const useDictionary = () => {
       }
     }
 
-    if (loading.value) {
-      while (loading.value) {
-        await new Promise(resolve => setTimeout(resolve, 50))
-      }
-
-      if (type !== undefined) {
-        const typedCached = dictionaries.value.filter(item => getItemType(item) === type)
-        if (typedCached.length > 0) {
-          return typedCached
-        }
-      } else if (dictionaries.value.length > 0) {
-        return dictionaries.value
-      }
-    }
-
     try {
+      if (type === undefined) {
+        if (!dictionariesRequestPromise) {
+          loading.value = true
+          error.value = null
+          dictionariesRequestPromise = requestDictionaries(baseURL).finally(() => {
+            dictionariesRequestPromise = null
+          })
+        }
+
+        const data = await dictionariesRequestPromise
+        dictionaries.value = data
+        return data
+      }
+
+      const pendingTyped = dictionariesByTypeRequestMap.get(type)
+      if (pendingTyped) {
+        return await pendingTyped
+      }
+
       loading.value = true
       error.value = null
 
-      const api = await getApiClient(baseURL)
+      const typedRequest = requestDictionaries(baseURL, type).finally(() => {
+        dictionariesByTypeRequestMap.delete(type)
+      })
 
-      let response: unknown
-      if (type !== undefined) {
-        const { default: axios } = await import('axios')
-        const isDev = import.meta.dev
-        const apiBase = baseURL || (isDev ? '' : runtimeConfig.public.apiBaseUrl || 'http://wallpaper-backend.carolin-violet.cn:8000')
-        const url = `${apiBase}/api/dictionaries/?type=${type}`
-        const axiosResponse = await axios.get(url)
-        response = axiosResponse.data
-      } else {
-        response = await api.DictionariesService.getAllDictionariesApiDictionariesGet({})
-      }
+      dictionariesByTypeRequestMap.set(type, typedRequest)
 
-      let data: DictionaryItem[] = normalizeDictionaryList(response)
-
-      if (type !== undefined) {
-        const typed = data.filter(item => getItemType(item) === type)
-        data = typed.length > 0 ? typed : data
-      }
-
-      if (type === undefined) {
-        dictionaries.value = data
-      }
-
+      const data = await typedRequest
       return data
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : '获取字典数据失败'

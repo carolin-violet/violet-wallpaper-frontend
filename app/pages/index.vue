@@ -42,7 +42,9 @@
       <div class="relative grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-4">
         <div class="rounded-2xl border border-violet-200/70 bg-white/85 p-3 shadow-[0_8px_20px_rgba(76,29,149,0.08)] dark:border-violet-900/70 dark:bg-slate-900/60">
           <div class="mb-2 flex items-center justify-between">
-            <p class="text-xs font-medium text-slate-500 dark:text-violet-200/80">设备类型</p>
+            <p class="text-xs font-medium text-slate-500 dark:text-violet-200/80">
+              设备类型
+            </p>
             <UButton
               v-if="filters.deviceType !== null"
               size="xs"
@@ -65,7 +67,9 @@
 
         <div class="rounded-2xl border border-violet-200/70 bg-white/85 p-3 shadow-[0_8px_20px_rgba(76,29,149,0.08)] dark:border-violet-900/70 dark:bg-slate-900/60">
           <div class="mb-2 flex items-center justify-between">
-            <p class="text-xs font-medium text-slate-500 dark:text-violet-200/80">精选状态</p>
+            <p class="text-xs font-medium text-slate-500 dark:text-violet-200/80">
+              精选状态
+            </p>
             <UButton
               v-if="filters.isFeatured !== null"
               size="xs"
@@ -88,7 +92,9 @@
 
         <div class="rounded-2xl border border-violet-200/70 bg-white/85 p-3 shadow-[0_8px_20px_rgba(76,29,149,0.08)] dark:border-violet-900/70 dark:bg-slate-900/60">
           <div class="mb-2 flex items-center justify-between">
-            <p class="text-xs font-medium text-slate-500 dark:text-violet-200/80">分类</p>
+            <p class="text-xs font-medium text-slate-500 dark:text-violet-200/80">
+              分类
+            </p>
             <UButton
               v-if="filters.category !== null"
               size="xs"
@@ -111,7 +117,9 @@
 
         <div class="rounded-2xl border border-violet-200/70 bg-white/85 p-3 shadow-[0_8px_20px_rgba(76,29,149,0.08)] dark:border-violet-900/70 dark:bg-slate-900/60">
           <div class="mb-2 flex items-center justify-between">
-            <p class="text-xs font-medium text-slate-500 dark:text-violet-200/80">标签（多选）</p>
+            <p class="text-xs font-medium text-slate-500 dark:text-violet-200/80">
+              标签（多选）
+            </p>
             <UButton
               v-if="selectedTags.length > 0"
               size="xs"
@@ -171,7 +179,6 @@
         <WallpaperGrid
           :wallpapers="wallpapers"
           :loading="loading"
-          :tags-map="tagsMap"
           @card-click="handleCardClick"
           @download="handleDownload"
           @view="handleView"
@@ -190,77 +197,77 @@
         class="mt-10 flex justify-center"
       >
         <div class="inline-flex items-center gap-2 rounded-full border border-violet-200/80 bg-white/85 px-4 py-2 text-[11px] text-slate-800 shadow-[0_18px_55px_rgba(73,41,130,0.26)] backdrop-blur-xl dark:border-violet-900/80 dark:bg-slate-950/90 dark:text-slate-100 sm:px-5">
-        <UButton
-          icon="i-lucide-arrow-left"
-          size="xs"
-          color="primary"
-          variant="ghost"
-          class="h-8 w-8 rounded-full border border-violet-200/80 dark:border-violet-800/80"
-          :disabled="currentPage <= 1 || loading"
-          @click="goPrevPage"
-        />
-
-        <div class="flex items-center gap-1">
-          <template
-            v-for="(item, index) in paginationItems"
-            :key="index"
-          >
-            <UButton
-              v-if="typeof item === 'number'"
-              :label="String(item)"
-              size="xs"
-              :color="item === currentPage ? 'primary' : 'neutral'"
-              :variant="item === currentPage ? 'solid' : 'ghost'"
-              class="h-8 min-w-8 justify-center rounded-full px-0.5 text-[11px]"
-              :disabled="loading"
-              @click="changePage(item)"
-            />
-            <span
-              v-else
-              class="px-1 text-slate-400 dark:text-slate-500"
-            >
-              ...
-            </span>
-          </template>
-        </div>
-
-        <div class="ml-2 hidden items-center gap-1 sm:flex">
-          <UInput
-            v-model="inputPage"
-            size="xs"
-            class="h-8 w-16 rounded-full border-violet-200/80 bg-violet-50/70 text-center text-[11px] dark:border-violet-800/80 dark:bg-slate-900/70"
-            :disabled="loading"
-            placeholder="跳转"
-            @keyup.enter="handleJump"
-          />
           <UButton
+            icon="i-lucide-arrow-left"
             size="xs"
             color="primary"
-            variant="soft"
-            class="h-8 rounded-full px-3 text-[11px]"
-            :disabled="loading"
-            @click="handleJump"
-          >
-            前往
-          </UButton>
-        </div>
+            variant="ghost"
+            class="h-8 w-8 rounded-full border border-violet-200/80 dark:border-violet-800/80"
+            :disabled="currentPage <= 1 || loading"
+            @click="goPrevPage"
+          />
 
-        <div class="ml-1 hidden items-center gap-1 border-l border-violet-200/80 pl-3 text-slate-500 dark:border-violet-800/70 dark:text-violet-200/90 sm:flex">
-          <span>第</span>
-          <span class="text-[11px] font-semibold">{{ currentPage }}</span>
-          <span>/</span>
-          <span class="text-[11px]">{{ totalPages }}</span>
-        </div>
+          <div class="flex items-center gap-1">
+            <template
+              v-for="(item, index) in paginationItems"
+              :key="index"
+            >
+              <UButton
+                v-if="typeof item === 'number'"
+                :label="String(item)"
+                size="xs"
+                :color="item === currentPage ? 'primary' : 'neutral'"
+                :variant="item === currentPage ? 'solid' : 'ghost'"
+                class="h-8 min-w-8 justify-center rounded-full px-0.5 text-[11px]"
+                :disabled="loading"
+                @click="changePage(item)"
+              />
+              <span
+                v-else
+                class="px-1 text-slate-400 dark:text-slate-500"
+              >
+                ...
+              </span>
+            </template>
+          </div>
 
-        <UButton
-          icon="i-lucide-arrow-right"
-          size="xs"
-          color="primary"
-          variant="ghost"
-          class="h-8 w-8 rounded-full border border-violet-200/80 dark:border-violet-800/80"
-          :disabled="currentPage >= totalPages || loading"
-          @click="goNextPage"
-        />
+          <div class="ml-2 hidden items-center gap-1 sm:flex">
+            <UInput
+              v-model="inputPage"
+              size="xs"
+              class="h-8 w-16 rounded-full border-violet-200/80 bg-violet-50/70 text-center text-[11px] dark:border-violet-800/80 dark:bg-slate-900/70"
+              :disabled="loading"
+              placeholder="跳转"
+              @keyup.enter="handleJump"
+            />
+            <UButton
+              size="xs"
+              color="primary"
+              variant="soft"
+              class="h-8 rounded-full px-3 text-[11px]"
+              :disabled="loading"
+              @click="handleJump"
+            >
+              前往
+            </UButton>
+          </div>
+
+          <div class="ml-1 hidden items-center gap-1 border-l border-violet-200/80 pl-3 text-slate-500 dark:border-violet-800/70 dark:text-violet-200/90 sm:flex">
+            <span>第</span>
+            <span class="text-[11px] font-semibold">{{ currentPage }}</span>
+            <span>/</span>
+            <span class="text-[11px]">{{ totalPages }}</span>
+          </div>
+
+          <UButton
+            icon="i-lucide-arrow-right"
+            size="xs"
+            color="primary"
+            variant="ghost"
+            class="h-8 w-8 rounded-full border border-violet-200/80 dark:border-violet-800/80"
+            :disabled="currentPage >= totalPages || loading"
+            @click="goNextPage"
+          />
         </div>
       </div>
     </ClientOnly>
@@ -281,7 +288,6 @@ import type { PictureResponseInfo, TagResponse } from '~/api/generated'
 const {
   getWallpapers,
   getTags,
-  incrementView,
   downloadPicture,
   loading: wallpaperLoading,
   error
@@ -292,35 +298,28 @@ const router = useRouter()
 
 const pageSize = 12
 
-const config = useRuntimeConfig()
-const defaultApiBase = (config.public.apiBaseUrl as string) || 'http://wallpaper-backend.carolin-violet.cn:8000'
-const ssrBaseURL = import.meta.server
-  ? defaultApiBase
-  : (import.meta.dev ? '' : defaultApiBase)
-
 const { data: initialWallpapers, pending: initialPending } = useAsyncData(
   'index-wallpapers',
   () => {
     const featuredRaw = route.query.featured
     const featured = featuredRaw === '1' ? 1 : null
-    return getWallpapers({ pageNum: 1, pageSize, isFeatured: featured }, ssrBaseURL)
+    return getWallpapers({ pageNum: 1, pageSize, isFeatured: featured })
   }
 )
 
 const { data: tagsData } = useAsyncData<TagResponse[]>(
   'index-tags',
-  () => getTags(ssrBaseURL)
+  () => getTags()
 )
 
-const { getDictionariesByType } = useDictionary()
+const { getDictionariesByType, initDictionaries } = useDictionary()
 const { data: categoryDictData } = useAsyncData(
   'index-categories',
-  () => getDictionariesByType(0, ssrBaseURL)
+  () => getDictionariesByType(0)
 )
 
 const wallpapers = ref<PictureResponseInfo[]>([])
 const tags = ref<TagResponse[]>([])
-const tagsMap = ref<Record<number, string[]>>({})
 const selectedTags = ref<string[]>([])
 const currentPage = ref(1)
 const total = ref(0)
@@ -332,10 +331,46 @@ const filters = ref({
   tags: null as string[] | null
 })
 
+const parseTagQuery = (value: unknown): string[] => {
+  const normalize = (input: string) => input.trim()
+  const splitTags = (input: string) =>
+    input
+      .split(',')
+      .map(normalize)
+      .filter(Boolean)
+
+  if (Array.isArray(value)) {
+    return Array.from(new Set(value.flatMap(item => splitTags(String(item)))))
+  }
+
+  if (typeof value === 'string') {
+    return Array.from(new Set(splitTags(value)))
+  }
+
+  return []
+}
+
+const isSameStringArray = (left: string[], right: string[]) => {
+  if (left.length !== right.length) {
+    return false
+  }
+
+  return left.every((item, index) => item === right[index])
+}
+
 watch(
-  () => route.query.featured,
-  (v) => {
-    filters.value.isFeatured = v === '1' ? 1 : null
+  () => [route.query.featured, route.query.tag] as const,
+  ([featuredRaw, tagRaw]) => {
+    const nextFeatured = featuredRaw === '1' ? 1 : null
+    const nextTags = parseTagQuery(tagRaw)
+
+    if (filters.value.isFeatured !== nextFeatured) {
+      filters.value.isFeatured = nextFeatured
+    }
+
+    if (!isSameStringArray(selectedTags.value, nextTags)) {
+      selectedTags.value = nextTags
+    }
   },
   { immediate: true }
 )
@@ -553,9 +588,6 @@ const clearFilters = () => {
   }
 
   selectedTags.value = []
-  currentPage.value = 1
-  router.replace({ query: {} })
-  loadWallpapers(1)
 }
 
 watch(
@@ -567,12 +599,19 @@ watch(
     if (filters.value.isFeatured === 1) {
       query.featured = '1'
     }
+    if (selectedTags.value.length > 0) {
+      query.tag = selectedTags.value.join(',')
+    }
 
     router.replace({ query })
     loadWallpapers(1)
   },
   { deep: true }
 )
+
+onMounted(() => {
+  initDictionaries()
+})
 
 const handleCardClick = (wallpaper: PictureResponseInfo) => {
   navigateTo(`/wallpaper/${wallpaper.id}`)
@@ -588,8 +627,7 @@ const handleDownload = async (wallpaper: PictureResponseInfo) => {
   }
 }
 
-const handleView = async (wallpaper: PictureResponseInfo) => {
-  await incrementView(wallpaper.id)
+const handleView = (wallpaper: PictureResponseInfo) => {
   navigateTo(`/wallpaper/${wallpaper.id}`)
 }
 </script>

@@ -1,17 +1,15 @@
-<template>
+﻿<template>
   <div class="container mx-auto px-4 py-8">
-    <!-- 加载状态 -->
     <div
       v-if="loading"
-      class="flex justify-center items-center min-h-[60vh]"
+      class="flex min-h-[60vh] items-center justify-center"
     >
       <UIcon
         name="i-lucide-loader-2"
-        class="w-8 h-8 animate-spin text-primary"
+        class="h-8 w-8 animate-spin text-primary"
       />
     </div>
 
-    <!-- 错误状态 -->
     <UAlert
       v-else-if="error"
       color="error"
@@ -19,12 +17,10 @@
       :title="error"
     />
 
-    <!-- 壁纸详情 -->
     <div
       v-else-if="wallpaper"
-      class="max-w-6xl mx-auto"
+      class="mx-auto max-w-6xl"
     >
-      <!-- 返回按钮 -->
       <UButton
         variant="ghost"
         icon="i-lucide-arrow-left"
@@ -34,31 +30,27 @@
         返回
       </UButton>
 
-      <!-- 主要内容 -->
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <!-- 图片区域 -->
+      <div class="grid grid-cols-1 gap-8 lg:grid-cols-3">
         <div class="lg:col-span-2">
-          <div
-            class="relative rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-800"
-          >
+          <div class="relative overflow-hidden rounded-lg bg-gray-100 dark:bg-gray-800">
             <NuxtImg
-              v-if="wallpaper && (wallpaper.webp_url || wallpaper.thumbnail_url || wallpaper.url)"
-              :src="wallpaper.webp_url || wallpaper.thumbnail_url || wallpaper.url"
+              v-if="imageSrc"
+              :src="imageSrc"
               :alt="wallpaper.original_filename || '壁纸'"
-              class="w-full h-auto"
+              class="h-auto w-full"
               loading="lazy"
             />
             <div
               v-else
-              class="aspect-video flex items-center justify-center bg-gray-200 dark:bg-gray-700"
+              class="flex aspect-video items-center justify-center bg-gray-200 dark:bg-gray-700"
             >
               <UIcon
                 name="i-lucide-image"
-                class="w-16 h-16 text-gray-400"
+                class="h-16 w-16 text-gray-400"
               />
             </div>
           </div>
-          <!-- 操作按钮 -->
+
           <div class="mt-4 flex gap-4">
             <UButton
               icon="i-lucide-download"
@@ -78,9 +70,7 @@
           </div>
         </div>
 
-        <!-- 信息区域 -->
         <div class="space-y-6">
-          <!-- 基本信息 -->
           <UCard>
             <template #header>
               <h2 class="text-xl font-semibold">
@@ -90,16 +80,16 @@
 
             <div class="space-y-4">
               <div>
-                <p class="text-sm text-gray-500 dark:text-gray-400 mb-1">
+                <p class="mb-1 text-sm text-gray-500 dark:text-gray-400">
                   文件名
                 </p>
                 <p class="font-medium">
-                  {{ wallpaper.original_filename || "未命名" }}
+                  {{ wallpaper.original_filename || '未命名' }}
                 </p>
               </div>
 
               <div v-if="wallpaper.width && wallpaper.height">
-                <p class="text-sm text-gray-500 dark:text-gray-400 mb-1">
+                <p class="mb-1 text-sm text-gray-500 dark:text-gray-400">
                   分辨率
                 </p>
                 <p class="font-medium">
@@ -108,7 +98,7 @@
               </div>
 
               <div v-if="categoryName">
-                <p class="text-sm text-gray-500 dark:text-gray-400 mb-1">
+                <p class="mb-1 text-sm text-gray-500 dark:text-gray-400">
                   分类
                 </p>
                 <UBadge
@@ -120,7 +110,7 @@
               </div>
 
               <div v-if="wallpaper.device_type">
-                <p class="text-sm text-gray-500 dark:text-gray-400 mb-1">
+                <p class="mb-1 text-sm text-gray-500 dark:text-gray-400">
                   设备类型
                 </p>
                 <UBadge
@@ -132,13 +122,13 @@
               </div>
 
               <div>
-                <p class="text-sm text-gray-500 dark:text-gray-400 mb-1">
-                  预览次数
+                <p class="mb-1 text-sm text-gray-500 dark:text-gray-400">
+                  浏览次数
                 </p>
-                <p class="font-medium flex items-center gap-1">
+                <p class="flex items-center gap-1 font-medium">
                   <UIcon
                     name="i-lucide-eye"
-                    class="w-4 h-4"
+                    class="h-4 w-4"
                   />
                   {{ wallpaper.view_count || 0 }}
                 </p>
@@ -146,8 +136,7 @@
             </div>
           </UCard>
 
-          <!-- 标签 -->
-          <UCard v-if="tags && tags.length > 0">
+          <UCard v-if="tags.length > 0">
             <template #header>
               <h2 class="text-xl font-semibold">
                 标签
@@ -176,42 +165,51 @@
 <script setup lang="ts">
 const route = useRoute()
 const router = useRouter()
+
 const { getWallpaperById, downloadPicture, incrementView } = useWallpaper()
 const { getDictionaryName, getDictionariesByType, initDictionaries } = useDictionary()
 
-const id = computed(() => Number(route.params.id))
+interface CategoryDictionaryItem {
+  code?: string
+  name?: string
+  name_cn?: string
+}
 
-const config = useRuntimeConfig()
-const defaultApiBase = (config.public.apiBaseUrl as string) || 'http://wallpaper-backend.carolin-violet.cn:8000'
-const ssrBaseURL = import.meta.server
-  ? defaultApiBase
-  : (import.meta.dev ? '' : defaultApiBase)
+interface WallpaperDetail {
+  id: number
+  original_filename?: string | null
+  width?: number | null
+  height?: number | null
+  webp_url?: string | null
+  thumbnail_url?: string | null
+  url?: string | null
+  category?: string | null
+  device_type?: number | null
+  view_count?: number | null
+  tags?: string[]
+}
+
+const id = computed(() => Number(route.params.id))
 
 const { data: categoryDictData } = useAsyncData(
   'wallpaper-detail-categories',
-  () => getDictionariesByType(0, ssrBaseURL)
+  () => getDictionariesByType(0)
 )
 
-// SSR：使用详情接口获取单个壁纸
 const {
   data: wallpaper,
   pending: loading,
   error: fetchError
-} = useAsyncData(
+} = useAsyncData<WallpaperDetail>(
   () => `wallpaper-${route.params.id}`,
   async () => {
     const pid = id.value
-    if (!pid || isNaN(pid)) {
-      throw new Error('无效的壁纸ID')
+    if (!pid || Number.isNaN(pid)) {
+      throw new Error('无效的壁纸 ID')
     }
 
-    try {
-      const response = await getWallpaperById(pid, ssrBaseURL)
-      return response
-    } catch (err: any) {
-      console.error('获取壁纸详情失败:', err)
-      throw err
-    }
+    const response = await getWallpaperById(pid)
+    return response as WallpaperDetail
   },
   { watch: [id] }
 )
@@ -223,7 +221,6 @@ const error = computed(() => {
   return null
 })
 
-// 仅客户端：增加预览次数（不在 SSR 中调用，避免每次请求都 +1）、初始化字典
 onMounted(() => {
   initDictionaries()
   if (id.value && wallpaper.value) {
@@ -231,33 +228,49 @@ onMounted(() => {
   }
 })
 
-// 分类中文名（优先详情页分类字典，其次全局字典）
+const imageSrc = computed(() => {
+  if (!wallpaper.value) {
+    return ''
+  }
+
+  return wallpaper.value.webp_url || wallpaper.value.thumbnail_url || wallpaper.value.url || ''
+})
+
 const categoryName = computed(() => {
   const categoryCode = wallpaper.value?.category
-  if (categoryCode === null || categoryCode === undefined || categoryCode === '') {
+  if (!categoryCode) {
     return ''
   }
 
   const normalizedCode = String(categoryCode).trim()
-  const localCategory = categoryDictData.value?.find((item: any) => String(item?.code ?? '').trim() === normalizedCode)
+  const localCategory = categoryDictData.value?.find(
+    (item: CategoryDictionaryItem) => String(item.code ?? '').trim() === normalizedCode
+  )
 
   return localCategory?.name_cn || localCategory?.name || getDictionaryName(categoryCode)
 })
 
-// 获取设备类型名称
-const getDeviceTypeName = (type: number | null) => {
+const getDeviceTypeName = (type: number | null | undefined) => {
   const map: Record<number, string> = {
     1: 'PC端',
     2: '移动端',
     3: '头像'
   }
-  return type ? map[type] || '未知' : '未知'
+
+  if (!type) {
+    return '未知'
+  }
+
+  return map[type] || '未知'
 }
 
 const tags = computed(() => wallpaper.value?.tags ?? [])
 
 const handleDownload = async () => {
-  if (!wallpaper.value) return
+  if (!wallpaper.value) {
+    return
+  }
+
   try {
     const blob = await downloadPicture(wallpaper.value.id)
     const filename = wallpaper.value.original_filename || `wallpaper-${wallpaper.value.id}`
@@ -268,12 +281,19 @@ const handleDownload = async () => {
 }
 
 const handleShare = () => {
-  if (typeof navigator !== 'undefined' && navigator.share && wallpaper.value) {
+  if (!wallpaper.value || typeof navigator === 'undefined') {
+    return
+  }
+
+  if (navigator.share) {
     navigator.share({
       title: wallpaper.value.original_filename || '壁纸',
       url: window.location.href
     })
-  } else if (typeof navigator !== 'undefined' && navigator.clipboard) {
+    return
+  }
+
+  if (navigator.clipboard) {
     navigator.clipboard.writeText(window.location.href)
   }
 }

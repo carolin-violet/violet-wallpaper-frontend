@@ -12,7 +12,7 @@ export default defineNuxtConfig({
 
   runtimeConfig: {
     public: {
-      apiBaseUrl: process.env.API_BASE_URL || 'http://wallpaper-backend.carolin-violet.cn:8000'
+      apiBaseUrl: process.env.API_BASE_URL
     }
   },
 

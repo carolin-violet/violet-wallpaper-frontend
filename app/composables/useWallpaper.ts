@@ -2,7 +2,6 @@
 import { getApiClient } from '~/api/client'
 
 export const useWallpaper = () => {
-  const runtimeConfig = useRuntimeConfig()
   const loading = ref(false)
   const error = ref<string | null>(null)
 
@@ -111,11 +110,8 @@ export const useWallpaper = () => {
 
   const downloadPicture = async (pictureId: number): Promise<Blob> => {
     try {
-      const isDev = import.meta.dev
-      const baseURL = isDev
-        ? ''
-        : runtimeConfig.public.apiBaseUrl || 'http://wallpaper-backend.carolin-violet.cn:8000'
-
+      const api = await getApiClient()
+      const baseURL = api.OpenAPI.BASE
       const { default: axios } = await import('axios')
       const response = await axios.get(`${baseURL}/api/pictures/${pictureId}/download`, {
         responseType: 'blob'
